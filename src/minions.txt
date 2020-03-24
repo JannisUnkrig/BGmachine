@@ -1,0 +1,16 @@
+Alleycat,1,1,1,beast,false,false,false,false
+Dragonspawn Lieutenant,1,2,3,dragon,true,false,false,false
+Righteous Protector,1,1,1,none,true,true,false,false
+Harvest Golem,2,2,3,mech,false,false,false,false
+Nathrezim Overseer,2,2,3,demon,false,false,false,false
+Bronze Warden,3,2,1,dragon,false,true,false,false
+Cobalt Guardian,3,6,3,mech,false,false,false,false
+Infested Wolf,3,3,3,beast,false,false,false,false
+Bolvar Fireblood,4,1,7,none,false,true,false,false
+Toxfin,4,1,2,murloc,false,false,false,false
+Goldrinn the Great Wolf,5,4,4,beast,false,false,false,false
+Voidlord,5,3,9,demon,true,false,false,false
+Foe Reaper 4000,6,6,9,mech,false,false,false,false
+Zapp Slywick,6,7,10,none,false,false,false,true
+Damaged Golem,1,2,1,mech,false,false,false,false
+Tabbycat,1,1,1,beast,false,false,false,false

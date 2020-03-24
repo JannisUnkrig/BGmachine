@@ -1,11 +1,19 @@
-
+import java.util.LinkedList;
 
 public interface IBoard {
 
-    void playMinion(int pos);
+    void playMinion(Minion minion, int pos);
 
     void moveMinion(int fromPos, int toPos);
 
-    void sellMinion(int pos);
+    void removeMinion(int pos);
+
+    LinkedList<Minion> getBoardMinions();
+
+    int getBoardSize();
+
+    Minion getBoardMinion(int pos);
+
+    String toString();
 
 }

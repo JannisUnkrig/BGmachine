@@ -68,6 +68,13 @@ public class Game {
                         return;
                     }
 
+                    if(command.startsWith("battle ") && command.length() == 8 && Character.isDigit(command.charAt(7))) {
+                        int nr = Integer.parseInt(command.substring(7));
+                        Battler.battle(displayedPlayer, players[nr - 1]);
+                        textAreaR.append("\nbattled player " + nr + "\n");
+                        return;
+                    }
+
 
                     //player action commands
                     if(command.equals("level")) {
@@ -170,5 +177,9 @@ public class Game {
 
     private static void updateDisplayedPlayer() {
         textAreaL.setText(displayedPlayer.toString());
+    }
+
+    public static void appendToLeftTextArea(String s) {
+        textAreaL.append(s);
     }
 }

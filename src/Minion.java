@@ -103,6 +103,10 @@ public class Minion {
         this.health = health;
     }
 
+    public void reduceHealth(int by) {
+        this.health -= by;
+    }
+
     public Tribe getTribe() { return tribe; }
 
     public void setTribe(Tribe tribe) { this.tribe = tribe; }

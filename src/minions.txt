@@ -6,6 +6,8 @@ Nathrezim Overseer,2,2,3,demon,false,false,false,false
 Bronze Warden,3,2,1,dragon,false,true,false,false
 Cobalt Guardian,3,6,3,mech,false,false,false,false
 Infested Wolf,3,3,3,beast,false,false,false,false
+Replicating Menace,3,3,1,mech,false,false,false,false
+Annoy-O-Module,4,2,4,mech,true,true,false,false
 Bolvar Fireblood,4,1,7,none,false,true,false,false
 Toxfin,4,1,2,murloc,false,false,false,false
 Goldrinn the Great Wolf,5,4,4,beast,false,false,false,false
@@ -14,3 +16,4 @@ Foe Reaper 4000,6,6,9,mech,false,false,false,false
 Zapp Slywick,6,7,10,none,false,false,false,true
 Damaged Golem,1,2,1,mech,false,false,false,false
 Tabbycat,1,1,1,beast,false,false,false,false
+Bronze Warden Reborn,3,2,1,dragon,false,true,false,false

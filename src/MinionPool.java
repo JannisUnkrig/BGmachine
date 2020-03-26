@@ -10,6 +10,9 @@ public class MinionPool {
     private static Minion[] vanillaMinions;
     private static int[] tierStarts = new int[7];      //tier 1 start at tierStarts[0], tier 2 at tierStarts[1], etc. Tokens start at tierStarts[6]
 
+    private static int repMenId;
+    private static int anModId;
+
 
     public static Minion getRandomMinion(int tavernTier) {
 
@@ -30,7 +33,25 @@ public class MinionPool {
 
     public static void returnMinion(Minion minion) {
         leftInPool[minion.getId()]++;
+        if(minion.getReplicatingMenace() > 0) {
+            leftInPool[repMenId] += minion.getReplicatingMenace();
+        }
+        if(minion.getGoldenReplicatingMenace() > 0) {
+            leftInPool[repMenId] += 3 * minion.getGoldenAnnoyOModule();
+        }
+        if(minion.getAnnoyOModule() > 0) {
+            leftInPool[anModId] += minion.getAnnoyOModule();
+        }
+        if(minion.getGoldenAnnoyOModule() > 0) {
+            leftInPool[anModId] += 3 * minion.getGoldenAnnoyOModule();
+        }
+    }
 
+    public static Minion generateMinion(String name) {
+        for (int i = vanillaMinions.length - 1; i >= 0; i--) {
+            if(vanillaMinions[i].getName().equals(name)) return new Minion(vanillaMinions[i]);
+        }
+        return null;
     }
 
 
@@ -58,6 +79,9 @@ public class MinionPool {
 
                 Minion toAdd = new Minion(  id, name, stars, attack, health, tribe, false, taunt, divineShield, poisonous, windfury);
                 minionsLL.add(toAdd);
+
+                if(name.equals("Replicating Menace")) repMenId = id;
+                if(name.equals("Annoy-O-Module")) anModId = id;
 
                 if(toAdd.getStars() != curStars) {
                     curStars = toAdd.getStars();

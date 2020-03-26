@@ -86,7 +86,7 @@ public class MinionPool {
                 if(toAdd.getStars() != curStars) {
                     curStars = toAdd.getStars();
                     tierStarts[cellToWriteIn] = id;
-                    cellToWriteIn++;
+                    if(cellToWriteIn <= 5) cellToWriteIn++;
                 }
                 id++;
             }

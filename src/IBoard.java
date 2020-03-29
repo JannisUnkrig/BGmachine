@@ -2,7 +2,7 @@ import java.util.LinkedList;
 
 public interface IBoard {
 
-    void playMinion(Minion minion, int pos);
+    void playMinion(Minion minion, int pos, int targetedPos);
 
     void moveMinion(int fromPos, int toPos);
 
@@ -14,6 +14,6 @@ public interface IBoard {
 
     Minion getBoardMinion(int pos);
 
-    String toString();
+    LinkedList<Minion> contains(String minionName);
 
 }

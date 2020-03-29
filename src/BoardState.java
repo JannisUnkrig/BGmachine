@@ -7,7 +7,8 @@ public class BoardState implements IBoard {
 
 
     @Override
-    public void playMinion(Minion minion, int pos) {
+    public void playMinion(Minion minion, int pos, int uselessPos) {
+        if(pos > boardMinions.size()) pos = boardMinions.size();            //TODO sloppy fix to correct play position of e.g. Tidehunter, if scout triples
         boardMinions.add(pos, minion);
     }
 
@@ -48,13 +49,12 @@ public class BoardState implements IBoard {
     }
 
     @Override
-    public String toString() {
-        String result = "Board:\n\n";
-        for (int i = 0; i < boardMinions.size(); i++) {
-            result += boardMinions.get(i).toString() + "\n";
+    public LinkedList<Minion> contains(String minionName) {
+        LinkedList<Minion> result = new LinkedList<>();
+        for (Minion m : boardMinions) {
+            if(m.getName().equals(minionName)) result.add(m);
         }
-        if(result.equals("Board:\n\n")) result += "empty :(\n";
+
         return result;
     }
-
 }

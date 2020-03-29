@@ -1,4 +1,4 @@
-public class Minion {
+public class Minion extends Card {
 
     private int id;
     private String name;
@@ -40,6 +40,7 @@ public class Minion {
         this.attack = toCopy.getAttack();
         this.health = toCopy.getHealth();
         this.tribe = toCopy.getTribe();
+        this.golden = toCopy.isGolden();
 
         this.taunt = toCopy.isTaunt();
         this.divineShield = toCopy.isDivineShield();
@@ -53,7 +54,9 @@ public class Minion {
     }
 
     public String toString() {
-        String built = "" + name + " | " + attack + "/" + health;
+        String built = "";
+        if(golden) built += "golden ";
+        built += name + " | " + attack + "/" + health;
         if(taunt) built += ", taunt";
         if(divineShield) built += ", divine shield";
         if(poisonous) built += ", poisonous";
@@ -67,24 +70,12 @@ public class Minion {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public int getStars() {
         return stars;
-    }
-
-    public void setStars(int stars) {
-        this.stars = stars;
     }
 
     public int getAttack() {
@@ -95,6 +86,10 @@ public class Minion {
         this.attack = attack;
     }
 
+    public void addAttack(int howMuch) {
+        this.attack += howMuch;
+    }
+
     public int getHealth() {
         return health;
     }
@@ -103,13 +98,15 @@ public class Minion {
         this.health = health;
     }
 
+    public void addHealth(int howMuch) {
+        this.health += howMuch;
+    }
+
     public void reduceHealth(int by) {
         this.health -= by;
     }
 
     public Tribe getTribe() { return tribe; }
-
-    public void setTribe(Tribe tribe) { this.tribe = tribe; }
 
     public boolean isGolden() {
         return golden;

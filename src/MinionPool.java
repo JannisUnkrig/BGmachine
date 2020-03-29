@@ -14,7 +14,7 @@ public class MinionPool {
     private static int anModId;
 
 
-    public static Minion getRandomMinion(int tavernTier) {
+    public static Minion getRandomMinionUpTo(int tavernTier) {
 
         int absoluteNumberInPool = 0;
         for (int i = 0; i < tierStarts[tavernTier]; i++) {
@@ -31,8 +31,29 @@ public class MinionPool {
         return new Minion(vanillaMinions[randomMinionId]);
     }
 
+    public static Minion getRandomMinionOf(int tavernTier) {
+
+        int absoluteNumberInPool = 0;
+        for (int i = tierStarts[tavernTier - 1]; i < tierStarts[tavernTier]; i++) {
+            absoluteNumberInPool += leftInPool[i];
+        }
+        int random = new Random().nextInt(absoluteNumberInPool) + 1;
+        int randomMinionId = tierStarts[tavernTier - 1] - 1;
+        for (int i = 0; random > 0; i++) {
+            random -= leftInPool[i];
+            randomMinionId++;
+        }
+
+        leftInPool[randomMinionId]--;
+        return new Minion(vanillaMinions[randomMinionId]);
+    }
+
     public static void returnMinion(Minion minion) {
-        leftInPool[minion.getId()]++;
+        if(!minion.isGolden()) {
+            leftInPool[minion.getId()]++;
+        } else {
+            leftInPool[minion.getId()] += 3;
+        }
         if(minion.getReplicatingMenace() > 0) {
             leftInPool[repMenId] += minion.getReplicatingMenace();
         }
@@ -64,8 +85,8 @@ public class MinionPool {
 
         while (scn.hasNextLine()){
             String line = scn.nextLine();
-            if(line.contains(",")) {
-                String[] splitted = line.split(",");
+            if(!line.startsWith("/") && line.contains(";")) {
+                String[] splitted = line.split(";");
 
                 String name = splitted[0];
                 int stars = Integer.parseInt(splitted[1]);

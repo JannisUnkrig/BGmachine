@@ -7,7 +7,7 @@ public class BoardState implements IBoard {
 
 
     @Override
-    public void playMinion(Minion minion, int pos, int uselessPos) {
+    public void playMinion(Minion minion, int pos, int uselessTargetPos) {
         if(pos > boardMinions.size()) pos = boardMinions.size();            //TODO sloppy fix to correct play position of e.g. Tidehunter, if scout triples
         boardMinions.add(pos, minion);
     }

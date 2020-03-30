@@ -45,7 +45,6 @@ public class Battler {
         if (alivePlayers <= 4) {
             shuffleable.removeIf(p2 -> p2.getDefeatedAsPlace() == 5 || p2.getDefeatedAsPlace() == 6);
         }
-        //TODO fehler? bei löschen aus liste über die iteriert wird
         if (alivePlayers <= 6) {
             shuffleable.removeIf(p2 -> p2.getDefeatedAsPlace() == 7 || p2.getDefeatedAsPlace() == 8);
         }

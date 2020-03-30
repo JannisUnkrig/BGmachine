@@ -1,4 +1,5 @@
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -25,6 +26,7 @@ public class Battler {
         generateMatchups(players);
     }
 
+    /** sets {@link #nextMatchups} */
     public static void generateMatchups(Player[] players) {
         int alivePlayers = 8;
         for (int i = 0; i < 8; i++) {
@@ -38,20 +40,14 @@ public class Battler {
         Collections.addAll(shuffleable, players);
 
         if (alivePlayers <= 2) {
-            for (Player p2 : shuffleable) {
-                if (p2.getDefeatedAsPlace() == 3 || p2.getDefeatedAsPlace() == 4) shuffleable.remove(p2);
-            }
+            shuffleable.removeIf(p2 -> p2.getDefeatedAsPlace() == 3 || p2.getDefeatedAsPlace() == 4);
         }
         if (alivePlayers <= 4) {
-            for (Player p2 : shuffleable) {
-                if (p2.getDefeatedAsPlace() == 5 || p2.getDefeatedAsPlace() == 6) shuffleable.remove(p2);
-            }
+            shuffleable.removeIf(p2 -> p2.getDefeatedAsPlace() == 5 || p2.getDefeatedAsPlace() == 6);
         }
-        //TODO fehler bei löschen aus liste über die iteriert wird
+        //TODO fehler? bei löschen aus liste über die iteriert wird
         if (alivePlayers <= 6) {
-            for (Player p2 : shuffleable) {
-                if (p2.getDefeatedAsPlace() == 7 || p2.getDefeatedAsPlace() == 8) shuffleable.remove(p2);
-            }
+            shuffleable.removeIf(p2 -> p2.getDefeatedAsPlace() == 7 || p2.getDefeatedAsPlace() == 8);
         }
 
 
@@ -59,28 +55,25 @@ public class Battler {
         if (alivePlayers >= 4) {
             loop: for (;;) {
                 Collections.shuffle(shuffleable);
-                for (int i = 0; i < shuffleable.size(); i += 2) {
-                    //matchup not twice in a row
-                    if (shuffleable.getFirst().getLastOpponent() != null) {
-                        if (shuffleable.get(i).getLastOpponent() == shuffleable.get(i + 1)) continue loop;
-                    }
-                    //matchup not twice in last three
-                    if (shuffleable.getFirst().getSecondToLastOpponent() != null) {
-                        if (shuffleable.get(i).getSecondToLastOpponent() == shuffleable.get(i + 1)) continue loop;
-                    }
+                for (int i = 0; i < shuffleable.size();) {
+                    Player p1 = shuffleable.get(i++);
+                    Player p2 = shuffleable.get(i++);
+
+                    if (p1.getLastOpponent() == p2 || p1.getSecondToLastOpponent() == p2) continue loop;
+
                     //matchup only last three against ghost TODO doesnt work
-                    if (alivePlayers % 2 == 1) {
-                        if (shuffleable.get(1).getDefeatedAsPlace() > 1 && curRanking.indexOf(shuffleable.get(i + 1)) + 3 < curRanking.indexOf(shuffleable.get(i))) continue loop;
-                    }
+                    if (    alivePlayers % 2 == 1
+                            && p1.getDefeatedAsPlace() > 1
+                            && curRanking.indexOf(p2) + 3 < curRanking.indexOf(p1)
+                    ) continue loop;
                 }
-                nextMatchups = shuffleable;
-                break loop;
+                break;
             }
         } else {
             //TODO find out if realy no rules apply if less than 4 players
             Collections.shuffle(shuffleable);
-            nextMatchups = shuffleable;
         }
+        nextMatchups = shuffleable;
     }
 
 
@@ -275,7 +268,7 @@ public class Battler {
         }
         if (p2.getHealth() <= 0) {
             p2.setHealth(0);
-            if (p1.getDefeatedAsPlace() == 1) deathsLastTurn.add(p2);
+            if (p2.getDefeatedAsPlace() == 1) deathsLastTurn.add(p2);
         }
 
         //tracking last opponents

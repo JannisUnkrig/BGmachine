@@ -10,31 +10,134 @@ public class Battler {
     private static BoardState p1b;
     private static BoardState p2b;
 
+    private static LinkedList<Player> nextMatchups;
+    private static LinkedList<Player> curRanking;
+
+    private static LinkedList<Player> deathsLastTurn;
+    private static int nextDeathWillBeRank;
 
     public static void battleAll(Player[] players) {
 
+        for (int i = 0; i < nextMatchups.size(); i += 2) {
+            battle(nextMatchups.get(i), nextMatchups.get(i + 1));
+        }
+
+        generateMatchups(players);
     }
 
-    private LinkedList<Player> generateMatchups(Player[] players) {
+    public static void generateMatchups(Player[] players) {
+        int alivePlayers = 8;
+        for (int i = 0; i < 8; i++) {
+            if (curRanking.get(i).getDefeatedAsPlace() > 1) {
+                alivePlayers = i;
+                break;
+            }
+        }
+
         LinkedList<Player> shuffleable = new LinkedList<>();
         Collections.addAll(shuffleable, players);
 
-        //solange >= 4 spieler leben
-        loop: for(;;) {
+        if (alivePlayers <= 2) {
+            for (Player p2 : shuffleable) {
+                if (p2.getDefeatedAsPlace() == 3 || p2.getDefeatedAsPlace() == 4) shuffleable.remove(p2);
+            }
+        }
+        if (alivePlayers <= 4) {
+            for (Player p2 : shuffleable) {
+                if (p2.getDefeatedAsPlace() == 5 || p2.getDefeatedAsPlace() == 6) shuffleable.remove(p2);
+            }
+        }
+        //TODO fehler bei löschen aus liste über die iteriert wird
+        if (alivePlayers <= 6) {
+            for (Player p2 : shuffleable) {
+                if (p2.getDefeatedAsPlace() == 7 || p2.getDefeatedAsPlace() == 8) shuffleable.remove(p2);
+            }
+        }
+
+
+
+        if (alivePlayers >= 4) {
+            loop: for (;;) {
+                Collections.shuffle(shuffleable);
+                for (int i = 0; i < shuffleable.size(); i += 2) {
+                    //matchup not twice in a row
+                    if (shuffleable.getFirst().getLastOpponent() != null) {
+                        if (shuffleable.get(i).getLastOpponent() == shuffleable.get(i + 1)) continue loop;
+                    }
+                    //matchup not twice in last three
+                    if (shuffleable.getFirst().getSecondToLastOpponent() != null) {
+                        if (shuffleable.get(i).getSecondToLastOpponent() == shuffleable.get(i + 1)) continue loop;
+                    }
+                    //matchup only last three against ghost TODO doesnt work
+                    if (alivePlayers % 2 == 1) {
+                        if (shuffleable.get(1).getDefeatedAsPlace() > 1 && curRanking.indexOf(shuffleable.get(i + 1)) + 3 < curRanking.indexOf(shuffleable.get(i))) continue loop;
+                    }
+                }
+                nextMatchups = shuffleable;
+                break loop;
+            }
+        } else {
+            //TODO find out if realy no rules apply if less than 4 players
             Collections.shuffle(shuffleable);
-            if (shuffleable.getFirst().getLastOpponent() != null) {
-                for (int i = 0; i < 8; i += 2) {
-                    if (shuffleable.get(i).getLastOpponent() == shuffleable.get(i + 1)) continue loop;
-                }
-            }
-            if (shuffleable.getFirst().getSecondToLastOpponent() != null) {
-                for (int i = 0; i < 8; i += 2) {
-                    if (shuffleable.get(i).getSecondToLastOpponent() == shuffleable.get(i + 1)) continue loop;
-                }
-            }
-            return shuffleable;
+            nextMatchups = shuffleable;
         }
     }
+
+
+    public static void calcCurrentRanking(Player[] players) {
+
+        if (!deathsLastTurn.isEmpty()) {
+            deathsLastTurn.sort((p1, p2) -> {
+                if (curRanking.indexOf(p1) > curRanking.indexOf(p2)) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            });
+            for (int i = deathsLastTurn.size() - 1; i >= 0; i--) {
+                deathsLastTurn.get(i).setDefeatedAsPlace(nextDeathWillBeRank);
+                nextDeathWillBeRank--;
+            }
+            deathsLastTurn.clear();
+        }
+
+        LinkedList<Player> ranking = new LinkedList<>();
+        Collections.addAll(ranking, players);
+
+        ranking.sort((o1, o2) -> {
+            if ((o1.getDefeatedAsPlace() == o2.getDefeatedAsPlace()) && (o1.getHealth() == o2.getHealth())) {
+                if (curRanking != null) {
+                    if(curRanking.indexOf(o1) > curRanking.indexOf(o2)) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                } else {
+                    if (o1.getPlayerNr() > o2.getPlayerNr()) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                }
+            } else if (o1.getDefeatedAsPlace() == o2.getDefeatedAsPlace()) {
+                if (o1.getHealth() < o2.getHealth()) {
+                    return 1;
+                } else if (o1.getHealth() == o2.getHealth()) {
+                    return 0;
+                } else {
+                    return -1;
+                }
+            } else {
+                if (o1.getDefeatedAsPlace() > o2.getDefeatedAsPlace()) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            }
+        });
+        curRanking = ranking;
+    }
+
 
     public static void battle(Player p1, Player p2) {
 
@@ -127,6 +230,10 @@ public class Battler {
 
         //dealing damage to loser
         if(p1b.getBoardSize() > 0 && p2b.getBoardSize() > 0) {
+            p1.setSecondToLastDamageTaken(p1.getLastDamageTaken());
+            p1.setLastDamageTaken(0);
+            p2.setSecondToLastDamageTaken(p2.getLastDamageTaken());
+            p2.setLastDamageTaken(0);
             Game.appendToLeftTextArea("Egg draw!");
 
         } else if(p1b.getBoardSize() > 0) {
@@ -135,6 +242,10 @@ public class Battler {
                 damage += p1b.getBoardMinion(i).getStars();
             }
             p2.reduceHealth(damage);
+            p2.setSecondToLastDamageTaken(p2.getLastDamageTaken());
+            p2.setLastDamageTaken(damage);
+            p1.setSecondToLastDamageTaken(p1.getLastDamageTaken());
+            p1.setLastDamageTaken(0);
             Game.appendToLeftTextArea("Player " + p1.getPlayerNr() + " won!\nPlayer " + p2.getPlayerNr() + " will take " + damage + " damage");
 
         } else if(p2b.getBoardSize() > 0) {
@@ -143,12 +254,36 @@ public class Battler {
                 damage += p2b.getBoardMinion(i).getStars();
             }
             p1.reduceHealth(damage);
+            p1.setSecondToLastDamageTaken(p1.getLastDamageTaken());
+            p1.setLastDamageTaken(damage);
+            p2.setSecondToLastDamageTaken(p2.getLastDamageTaken());
+            p2.setLastDamageTaken(0);
             Game.appendToLeftTextArea("Player " + p2.getPlayerNr() + " won!\nPlayer " + p1.getPlayerNr() + " will take " + damage + " damage");
 
         } else {
+            p1.setSecondToLastDamageTaken(p1.getLastDamageTaken());
+            p1.setLastDamageTaken(0);
+            p2.setSecondToLastDamageTaken(p2.getLastDamageTaken());
+            p2.setLastDamageTaken(0);
             Game.appendToLeftTextArea("It's a draw!");
         }
 
+        //adding dead players to deathsLastTurn
+        if (p1.getHealth() <= 0) {
+            p1.setHealth(0);
+            if (p1.getDefeatedAsPlace() == 1) deathsLastTurn.add(p1);
+        }
+        if (p2.getHealth() <= 0) {
+            p2.setHealth(0);
+            if (p1.getDefeatedAsPlace() == 1) deathsLastTurn.add(p2);
+        }
+
+        //tracking last opponents
+        p1.setSecondToLastOpponent(p1.getLastOpponent());
+        p1.setLastOpponent(p2);
+
+        p2.setSecondToLastOpponent(p2.getLastOpponent());
+        p2.setLastOpponent(p1);
 
     }   //end of battle method
 
@@ -466,5 +601,56 @@ public class Battler {
             }
         }
         return 1;
+    }
+
+    public static String getRankingAsString() {
+        String built = "Current Ranking:\n";
+        for (Player p : curRanking) {
+            built += "\n";
+            if (p.getDefeatedAsPlace() > 1) built += p.getDefeatedAsPlace() +". ";
+            built += "Player " + p.getPlayerNr() + " | Health: " + p.getHealth();
+            if (p.getLastOpponent() != null) {
+                built += "   |   ";
+                if (p.getLastDamageTaken() > 0) built += "Took " + p.getLastDamageTaken() + " Damage from ";
+                else {
+                    if(p.getLastOpponent().getLastDamageTaken() == 0) built += "Drew with ";
+                    else built += "Dealt " + p.getLastOpponent().getLastDamageTaken() + " Damage to ";
+                }
+                built += "Player " + p.getLastOpponent().getPlayerNr();
+            }
+            if (p.getSecondToLastOpponent() != null) {
+                built += "   |   ";
+                if (p.getSecondToLastDamageTaken() > 0) built += "Took " + p.getSecondToLastDamageTaken() + " Damage from ";
+                else {
+                    if(p.getSecondToLastOpponent().getSecondToLastDamageTaken() == 0) built += "Drew with ";
+                    else built += "Dealt " + p.getSecondToLastOpponent().getSecondToLastDamageTaken() + " Damage to ";
+                }
+                built += "Player " + p.getSecondToLastOpponent().getPlayerNr();
+            }
+        }
+        return built;
+    }
+
+    public static String getNextOpponentAsString(Player p) {
+        String built = "Next Opponent: Player ";
+        int index = nextMatchups.indexOf(p);
+        if(index % 2 == 0) {
+            built += nextMatchups.get(index + 1).getPlayerNr();
+        } else {
+            built += nextMatchups.get(index - 1).getPlayerNr();
+        }
+        return built;
+    }
+
+    public static void setCurRanking(LinkedList<Player> curRanking) {
+        Battler.curRanking = curRanking;
+    }
+
+    public static void setNextDeathWillBeRank(int nextDeathWillBeRank) {
+        Battler.nextDeathWillBeRank = nextDeathWillBeRank;
+    }
+
+    public static void setDeathsLastTurn(LinkedList<Player> deathsLastTurn) {
+        Battler.deathsLastTurn = deathsLastTurn;
     }
 }

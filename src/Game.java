@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
+import java.util.LinkedList;
 
 public class Game {
 
@@ -47,8 +48,10 @@ public class Game {
                         textAreaR.append("\nHjelp:\n\n" +
                                 "Control commands:\n" +
                                 "player x:\tChoose as which player you play. x = player number (1-8)\n" +
-                                "nextturn:\tStarts the next shopping phase for all players.\n" +
+                                "timeup:\tsimulates shopping phase being over. Hence battles start and the next shopping\n\tphase begins afterwards.\n\n" +
+                                "Non-Real commands:\n" +
                                 "restart:\tRestarts the game.\n" +
+                                "nextturn:\tStarts the next shopping phase for all players.\n" +
                                 "battle x:\tBattle against another player. x = opponent's player number (1-8)\n" +
                                 "battleall:\tAll players battle in semi-random matchups.\n\n" +
                                 "Player's commands:\n" +
@@ -75,12 +78,9 @@ public class Game {
                         }
                     }
 
-                    if(command.equals("nextturn")) {
-                        for (int i = 0; i < 8; i++) {
-                            players[i].newTurnReset();
-                        }
-                        updateDisplayedPlayer();
-                        textAreaR.append("\nstarted next turn\n");
+                    if(command.equals("timeup")) {
+                        battleAndStartNextTurn();
+                        textAreaR.append("\neveryone battled and a new turn started\n");
                         return;
                     }
 
@@ -90,9 +90,14 @@ public class Game {
                         return;
                     }
 
+                    if(command.equals("nextturn")) {
+                        startNextTurn();
+                        textAreaR.append("\nstarted next turn\n");
+                        return;
+                    }
+
                     if(command.startsWith("battle ") && command.length() == 8 && Character.isDigit(command.charAt(7))) {
                         int nr = Integer.parseInt(command.substring(7));
-                        updateDisplayedPlayer();
                         Battler.battle(displayedPlayer, players[nr - 1]);
                         textAreaR.append("\nbattled player " + nr + "\n");
                         return;
@@ -100,7 +105,6 @@ public class Game {
 
                     if(command.equals("battleall")) {
                         Battler.battleAll(players);
-                        updateDisplayedPlayer();
                         textAreaR.append("\neveryone battled someone\n");
                         return;
                     }
@@ -224,6 +228,27 @@ public class Game {
 
         generatePlayers();
         displayedPlayer = players[0];
+
+        Battler.setNextDeathWillBeRank(8);
+        Battler.setDeathsLastTurn(new LinkedList<>());
+        Battler.setCurRanking(null);
+        Battler.calcCurrentRanking(players);
+        Battler.generateMatchups(players);
+
+        updateDisplayedPlayer();
+    }
+
+    private static void battleAndStartNextTurn() {
+        Battler.battleAll(players);
+        startNextTurn();
+    }
+
+    private static void startNextTurn() {
+        Battler.calcCurrentRanking(players);
+        Battler.generateMatchups(players);
+        for (int i = 0; i < 8; i++) {
+            players[i].newTurnReset();
+        }
         updateDisplayedPlayer();
     }
 
@@ -235,7 +260,10 @@ public class Game {
     }
 
     private static void updateDisplayedPlayer() {
-        textAreaL.setText(displayedPlayer.toString());
+        textAreaL.setText(Battler.getRankingAsString() + "\n\n" + Battler.getNextOpponentAsString(displayedPlayer) +
+                "\n\n   ---------------------------------------------------------------------------------------------------------------------\n\n"
+                + displayedPlayer.toString() +
+                "\n   ---------------------------------------------------------------------------------------------------------------------");
     }
 
     public static void appendToLeftTextArea(String s) {

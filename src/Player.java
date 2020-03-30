@@ -18,7 +18,7 @@ public class Player {
     private Player secondToLastOpponent = null;
     private int lastDamageTaken = 0;
     private int secondToLastDamageTaken = 0;
-    private int defeatedAsPlace = 0;
+    private int defeatedAsPlace = 1;
 
 
     public Player(int playerNr) {
@@ -239,6 +239,10 @@ public class Player {
 
     public int getHealth() {
         return health;
+    }
+
+    public void setHealth(int to) {
+        this.health = to;
     }
 
     public void reduceHealth(int by) {

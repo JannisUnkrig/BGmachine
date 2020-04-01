@@ -2,7 +2,7 @@ import java.util.LinkedList;
 
 public class BoardState implements IBoard {
 
-    LinkedList<Minion> boardMinions = new LinkedList<>();
+    private LinkedList<Minion> boardMinions = new LinkedList<>();
 
 
 
@@ -14,9 +14,7 @@ public class BoardState implements IBoard {
 
     @Override
     public void moveMinion(int fromPos, int toPos) {
-        Minion save = boardMinions.get(fromPos);
-        boardMinions.remove(fromPos);
-        boardMinions.add(toPos, save);
+        //useless
     }
 
     @Override

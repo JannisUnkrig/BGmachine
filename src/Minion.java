@@ -12,6 +12,7 @@ public class Minion extends Card {
     private boolean divineShield;
     private boolean poisonous;
     private boolean windfury;
+    private boolean reborn = false;
     private int replicatingMenace = 0;
     private int annoyOModule = 0;
     private int goldenReplicatingMenace = 0;
@@ -31,6 +32,7 @@ public class Minion extends Card {
         this.divineShield = divineShield;
         this.poisonous = poisonous;
         this.windfury = windfury;
+        if (name.equals("Bronze Warden")) this.reborn = true;
     }
 
     public Minion(Minion toCopy) {
@@ -46,11 +48,16 @@ public class Minion extends Card {
         this.divineShield = toCopy.isDivineShield();
         this.poisonous = toCopy.isPoisonous();
         this.windfury = toCopy.isWindfury();
+        this.reborn = toCopy.isReborn();
         this.replicatingMenace = toCopy.getReplicatingMenace();
         this.annoyOModule = toCopy.getAnnoyOModule();
         this.goldenReplicatingMenace = toCopy.getGoldenReplicatingMenace();
         this.goldenAnnoyOModule = toCopy.getGoldenAnnoyOModule();
         this.plantDeathrattle = toCopy.getPlantDeathrattle();
+    }
+
+    public Minion() {
+        this.name = "dummy";
     }
 
     public String toString() {
@@ -61,6 +68,7 @@ public class Minion extends Card {
         if(divineShield) built += ", divine shield";
         if(poisonous) built += ", poisonous";
         if(windfury) built += ", windfury";
+        if(reborn) built += ", reborn";
         if(replicatingMenace > 0) built += ", " + replicatingMenace + " replicating menace";
         if(plantDeathrattle > 0) built += ", " + plantDeathrattle + " plant deathrattle";
         return built;
@@ -98,6 +106,7 @@ public class Minion extends Card {
         this.health = health;
     }
 
+    //dont modify on board without notifying aura board
     public void addHealth(int howMuch) {
         this.health += howMuch;
     }
@@ -146,6 +155,14 @@ public class Minion extends Card {
 
     public void setWindfury(boolean windfury) {
         this.windfury = windfury;
+    }
+
+    public boolean isReborn() {
+        return reborn;
+    }
+
+    public void setReborn(boolean reborn) {
+        this.reborn = reborn;
     }
 
     public int getReplicatingMenace() {

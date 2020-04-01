@@ -1,5 +1,4 @@
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -8,8 +7,8 @@ public class Battler {
     private static Minion p1nextAttacker;
     private static Minion p2nextAttacker;
 
-    private static BoardState p1b;
-    private static BoardState p2b;
+    private static AuraBoard p1b;
+    private static AuraBoard p2b;
 
     private static LinkedList<Player> nextMatchups;
     private static LinkedList<Player> curRanking;
@@ -60,7 +59,7 @@ public class Battler {
 
                     if (p1.getLastOpponent() == p2 || p1.getSecondToLastOpponent() == p2) continue loop;
 
-                    //matchup only last three against ghost TODO doesnt work
+                    //matchup only last three against ghost
                     if (    alivePlayers % 2 == 1
                             && p1.getDefeatedAsPlace() > 1
                             && curRanking.indexOf(p2) + 3 < curRanking.indexOf(p1)
@@ -69,7 +68,7 @@ public class Battler {
                 break;
             }
         } else {
-            //TODO find out if realy no rules apply if less than 4 players
+            //TODO find out if really no rules apply if less than 4 players
             Collections.shuffle(shuffleable);
         }
         nextMatchups = shuffleable;
@@ -146,8 +145,8 @@ public class Battler {
 
         Game.appendToLeftTextArea("\n\n\nPlayer " + p1.getPlayerNr() + " vs. Player " + p2.getPlayerNr() + "\n\n");
 
-        p1b = p1.getMyBoard().getMyBoardState().getDeepCopyOfThis();
-        p2b = p2.getMyBoard().getMyBoardState().getDeepCopyOfThis();
+        p1b = p1.getMyBoard().getMyAuraBoard().getDeepCopyOfThis();
+        p2b = p2.getMyBoard().getMyAuraBoard().getDeepCopyOfThis();
 
         if (p1b.getBoardSize() > 0 && p2b.getBoardSize() > 0) {
             p1nextAttacker = p1b.getBoardMinion(0);
@@ -315,7 +314,7 @@ public class Battler {
 
 
     //executes one attack
-    public static boolean attack(BoardState attackersBoard, Minion attacker, BoardState defendersBoard) {
+    public static boolean attack(AuraBoard attackersBoard, Minion attacker, AuraBoard defendersBoard) {
         if(attacker.getAttack() <= 0) return false;
 
         int howOften = 1;
@@ -339,13 +338,13 @@ public class Battler {
 
             Minion target = defendersBoard.getBoardMinion(targetIndex);
 
-            Game.appendToLeftTextArea(attacker.toString() + "  attacks  " + target.toString() + " (not displaying aura-buffs)\n");
+            Game.appendToLeftTextArea(attacker.toString() + "  attacks  " + target.toString() + "\n");
 
             int targetAttack = target.getAttack();
             int attackerAttack = attacker.getAttack();
 
             //handling targets aura effects
-            LinkedList<Minion> murlocWarleaders = defendersBoard.contains("Murloc Warleader");
+            /*LinkedList<Minion> murlocWarleaders = defendersBoard.contains("Murloc Warleader");
             if (!murlocWarleaders.isEmpty() && (target.getTribe() == Tribe.MURLOC || target.getTribe() == Tribe.ALL)) {
                 int buffs = 0;
                 for (Minion mwl : murlocWarleaders) {
@@ -358,7 +357,7 @@ public class Battler {
                     }
                 }
                 targetAttack += buffs;
-            }
+            }*/
 
             if(target.getName().equals("Old Murk-Eye")) {
                 int murlocCounter = -1;                 //-1 because only other murlocs count
@@ -379,7 +378,7 @@ public class Battler {
                 }
             }
 
-            if (targetIndex - 1 >= 0) {
+            /*if (targetIndex - 1 >= 0) {
                 Minion possiblyDWA = defendersBoard.getBoardMinion(targetIndex - 1);
                 if(possiblyDWA.getName().equals("Dire Wolf Alpha")){
                     if (!possiblyDWA.isGolden()) {
@@ -398,10 +397,10 @@ public class Battler {
                         targetAttack += 2;
                     }
                 }
-            }
+            }*/
 
             //handling attackers aura effects
-            LinkedList<Minion> murlocWarleaders2 = attackersBoard.contains("Murloc Warleader");
+            /*LinkedList<Minion> murlocWarleaders2 = attackersBoard.contains("Murloc Warleader");
             if (!murlocWarleaders2.isEmpty() && (attacker.getTribe() == Tribe.MURLOC || attacker.getTribe() == Tribe.ALL)) {
                 int buffs = 0;
                 for (Minion mwl : murlocWarleaders2) {
@@ -414,7 +413,7 @@ public class Battler {
                     }
                 }
                 attackerAttack += buffs;
-            }
+            }*/
 
             if(attacker.getName().equals("Old Murk-Eye")) {
                 int murlocCounter = -1;                 //-1 because only other murlocs count
@@ -435,7 +434,7 @@ public class Battler {
                 }
             }
 
-            int attackerIndex = attackersBoard.getBoardMinions().indexOf(attacker);
+            /*int attackerIndex = attackersBoard.getBoardMinions().indexOf(attacker);
             if (attackerIndex - 1 >= 0) {
                 Minion possiblyDWA = attackersBoard.getBoardMinion(attackerIndex - 1);
                 if(possiblyDWA.getName().equals("Dire Wolf Alpha")){
@@ -455,7 +454,7 @@ public class Battler {
                         attackerAttack += 2;
                     }
                 }
-            }
+            }*/
 
             //execute attack
             dealDamage(defendersBoard, target, targetAttack, attackersBoard, attacker);
@@ -464,34 +463,33 @@ public class Battler {
         return true;
     }
 
-    public static void dealDamage(BoardState damageDealersBoardState, Minion damageDealer, int howMuch, BoardState targetsBoardState, Minion target) {
+    public static void dealDamage(AuraBoard damageDealersAuraBoard, Minion damageDealer, int howMuch, AuraBoard targetsAuraBoard, Minion target) {
 
         if (!target.isDivineShield()) {
             target.reduceHealth(howMuch);
             if (target.getHealth() <= 0 || (damageDealer.isPoisonous() && damageDealer.getAttack() > 0)) {
-                killMinion(targetsBoardState, target, damageDealersBoardState, damageDealer);
+                killMinion(targetsAuraBoard, target, damageDealersAuraBoard, damageDealer);
             }
         } else {
             if(damageDealer.getAttack() > 0) target.setDivineShield(false);
         }
     }
 
-    public static void killMinion(BoardState boardState, Minion minion, BoardState opposingBoardState, Minion killer) {
+    public static void killMinion(AuraBoard minionsAuraBoard, Minion minion, AuraBoard opposingAuraBoard, Minion killer) {
         //TODO deathrattles, board dependent stuff
         Game.appendToLeftTextArea(minion.toString() + " died\n");
-        if(minion == p1nextAttacker) p1GoToNextAttackerInLine();
-        if(minion == p2nextAttacker) p2GoToNextAttackerInLine();
-        int savePos = boardState.getBoardMinions().indexOf(minion);
-        boardState.getBoardMinions().remove(minion);
+        int savePos = minionsAuraBoard.getBoardMinions().indexOf(minion);
+        minionsAuraBoard.removeMinion(savePos);
+        boolean nextAttackerModified = false;
 
         if (minion.getName().equals("Fiendish Servant")) {
-            int howOften = getDeathrattleMultiplier(boardState);
+            int howOften = getDeathrattleMultiplier(minionsAuraBoard);
             for (int i  = 0; i < howOften; i++) {
-                if (boardState.getBoardSize() > 0) {
+                if (minionsAuraBoard.getBoardSize() > 0) {
                     int oneceOrTwice = 1;
                     if(minion.isGolden()) oneceOrTwice = 2;
                     for (int j = 0; j < oneceOrTwice; j++) {
-                        Minion luckyOne = boardState.getBoardMinion(new Random().nextInt(boardState.getBoardSize()));
+                        Minion luckyOne = minionsAuraBoard.getBoardMinion(new Random().nextInt(minionsAuraBoard.getBoardSize()));
                         luckyOne.addAttack(minion.getAttack());
                         Game.appendToLeftTextArea("Fiendish Servant's deathrattle gave " + minion.getAttack() + " attack to " + luckyOne.getName() + "\n");
                     }
@@ -500,7 +498,7 @@ public class Battler {
         }
 
         if (minion.getName().equals("Mecharoo")) {
-            int howOften = getDeathrattleMultiplier(boardState);
+            int howOften = getDeathrattleMultiplier(minionsAuraBoard);
             for (int i  = 0; i < howOften; i++) {
                 Minion joEBot = MinionPool.generateMinion("Jo-E Bot");
                 if (minion.isGolden()) {
@@ -508,22 +506,28 @@ public class Battler {
                     joEBot.setAttack(2);
                     joEBot.setHealth(2);
                 }
-                summonMinion(boardState, joEBot, savePos);
-                if (boardState == p1b) setP1nextAttacker(joEBot);
-                if (boardState == p2b) setP2nextAttacker(joEBot);
+                summonMinion(minionsAuraBoard, joEBot, savePos);
+                if (minion == p1nextAttacker) {
+                    setP1nextAttacker(joEBot);
+                    nextAttackerModified = true;
+                }
+                if (minion == p2nextAttacker) {
+                    setP2nextAttacker(joEBot);
+                    nextAttackerModified = true;
+                }
                 Game.appendToLeftTextArea("Mecharoo's deathrattle summoned Jo-E Bot\n");
             }
         }
 
         if (minion.getName().equals("Selfless Hero")) {
-            int howOften = getDeathrattleMultiplier(boardState);
+            int howOften = getDeathrattleMultiplier(minionsAuraBoard);
             for (int i  = 0; i < howOften; i++) {
-                if (boardState.getBoardSize() > 0) {
+                if (minionsAuraBoard.getBoardSize() > 0) {
                     int onceOrTwice = 1;
                     if(minion.isGolden()) onceOrTwice = 2;
                     for (int j = 0; j < onceOrTwice; j++) {
                         LinkedList<Minion> noDivineShielders = new LinkedList<>();
-                        for (Minion m : boardState.getBoardMinions()) {
+                        for (Minion m : minionsAuraBoard.getBoardMinions()) {
                             if (!m.isDivineShield()) noDivineShielders.add(m);
                         }
                         Collections.shuffle(noDivineShielders);
@@ -536,7 +540,7 @@ public class Battler {
         }
 
         if (minion.getName().equals("Harvest Golem")) {
-            int howOften = getDeathrattleMultiplier(boardState);
+            int howOften = getDeathrattleMultiplier(minionsAuraBoard);
             for (int i  = 0; i < howOften; i++) {
                 Minion damagedGolem = MinionPool.generateMinion("Damaged Golem");
                 if (minion.isGolden()) {
@@ -544,27 +548,123 @@ public class Battler {
                     damagedGolem.setAttack(4);
                     damagedGolem.setHealth(2);
                 }
-                summonMinion(boardState, damagedGolem, savePos);
-                if (boardState == p1b) setP1nextAttacker(damagedGolem);
-                if (boardState == p2b) setP2nextAttacker(damagedGolem);
+                summonMinion(minionsAuraBoard, damagedGolem, savePos);
+                if (minion == p1nextAttacker) {
+                    setP1nextAttacker(damagedGolem);
+                    nextAttackerModified = true;
+                }
+                if (minion == p2nextAttacker) {
+                    setP2nextAttacker(damagedGolem);
+                    nextAttackerModified = true;
+                }
                 Game.appendToLeftTextArea("Harvest Golem's deathrattle summoned Damaged Golem\n");
             }
         }
 
-        if (minion.getName().equals("Bronze Warden")) {
-            Minion bwr = MinionPool.generateMinion("Bronze Warden Reborn");
-            boardState.playMinion(bwr, savePos, -1);                                        //explicitly not a summon
-            if(boardState == p1b) setP1nextAttacker(bwr);
-            if(boardState == p2b) setP2nextAttacker(bwr);
-            Game.appendToLeftTextArea("Bronze Warden resurrected\n");
+        if(minion.getName().equals("Spawn of N'Zoth")) {
+            int howOften = getDeathrattleMultiplier(minionsAuraBoard);
+            for (int i = 0; i < howOften; i++) {
+                for (Minion m : minionsAuraBoard.getBoardMinions()) {
+                    if (!minion.isGolden()) {
+                        m.addAttack(1);
+                        minionsAuraBoard.addHealthTo(m, 1);
+                    } else {
+                        m.addAttack(2);
+                        minionsAuraBoard.addHealthTo(m, 2);
+                    }
+                }
+            }
         }
 
+        if(minion.getName().equals("Unstable Ghoul")) {
+            int howOften = getDeathrattleMultiplier(minionsAuraBoard);
+            for (int i = 0; i < howOften; i++) {
+                for (Minion m : minionsAuraBoard.getBoardMinions()) {
+                    if (!minion.isGolden()) {
+                        //TODO find out interactions with imp gang boss etc. and deathrattles
+                    } else {
+
+                    }
+                }
+            }
+        }
+
+        if(minion.getName().equals("Goldrinn, the Great Wolf")) {
+            int howOften = getDeathrattleMultiplier(minionsAuraBoard);
+            for (int i = 0; i < howOften; i++) {
+                for (Minion ideallyBeast : minionsAuraBoard.getBoardMinions()) {
+                    if (ideallyBeast.getTribe() == Tribe.BEAST || ideallyBeast.getTribe() == Tribe.ALL) {
+                        if (!minion.isGolden()) {
+                            ideallyBeast.addAttack(4);
+                            minionsAuraBoard.addHealthTo(ideallyBeast, 4);
+                        } else {
+                            ideallyBeast.addAttack(8);
+                            minionsAuraBoard.addHealthTo(ideallyBeast, 8);
+                        }
+                    }
+                }
+            }
+        }
+
+        if(minion.getName().equals("King Bagurgle")) {
+            int howOften = getDeathrattleMultiplier(minionsAuraBoard);
+            for (int i = 0; i < howOften; i++) {
+                for (Minion ideallyMurloc : minionsAuraBoard.getBoardMinions()) {
+                    if (ideallyMurloc.getTribe() == Tribe.MURLOC || ideallyMurloc.getTribe() == Tribe.ALL) {
+                        if (!minion.isGolden()) {
+                            ideallyMurloc.addAttack(2);
+                            minionsAuraBoard.addHealthTo(ideallyMurloc, 2);
+                        } else {
+                            ideallyMurloc.addAttack(4);
+                            minionsAuraBoard.addHealthTo(ideallyMurloc, 4);
+                        }
+                    }
+                }
+            }
+        }
+
+        if(minion.getName().equals("Nadina the Red")) {
+            int howOften = getDeathrattleMultiplier(minionsAuraBoard);
+            for (int i = 0; i < howOften; i++) {
+                for (Minion ideallyDragon : minionsAuraBoard.getBoardMinions()) {
+                    if (ideallyDragon.getTribe() == Tribe.DRAGON || ideallyDragon.getTribe() == Tribe.ALL) {
+                        ideallyDragon.setDivineShield(true);
+                    }
+                }
+            }
+        }
+
+
+        if (minion.isReborn()) {
+            Minion ressurrectedMinion = MinionPool.generateMinion(minion.getName());
+            ressurrectedMinion.setReborn(false);
+            ressurrectedMinion.setHealth(1);
+            if (minion.isGolden()) {
+                ressurrectedMinion.setGolden(true);
+                ressurrectedMinion.addAttack(ressurrectedMinion.getAttack());
+            }
+            minionsAuraBoard.playMinion(ressurrectedMinion, savePos, -1);                                        //explicitly not a summon
+            if (minion == p1nextAttacker) {
+                setP1nextAttacker(ressurrectedMinion);
+                nextAttackerModified = true;
+            }
+            if (minion == p2nextAttacker) {
+                setP2nextAttacker(ressurrectedMinion);
+                nextAttackerModified = true;
+            }
+            Game.appendToLeftTextArea(minion.getName() + " resurrected\n");
+        }
+
+        if (!nextAttackerModified) {
+            if (minion == p1nextAttacker) p1GoToNextAttackerInLine();
+            if (minion == p2nextAttacker) p2GoToNextAttackerInLine();
+        }
     }
 
-    public static void summonMinion(BoardState boardState, Minion minion, int pos) {
-        if (boardState.getBoardSize() >= 7) return;
+    public static void summonMinion(AuraBoard auraBoard, Minion minion, int pos) {
+        if (auraBoard.getBoardSize() >= 7) return;
 
-        LinkedList<Minion> murlocTidecallers = boardState.contains("Murloc Tidecaller");
+        LinkedList<Minion> murlocTidecallers = auraBoard.contains("Murloc Tidecaller");
         if (!murlocTidecallers.isEmpty() && (minion.getTribe() == Tribe.MURLOC || minion.getTribe() == Tribe.ALL)) {
             for (Minion mtc : murlocTidecallers) {
                 if (!mtc.isGolden()) {
@@ -575,12 +675,12 @@ public class Battler {
             }
         }
 
-        boardState.playMinion(minion, pos, -1);
+        auraBoard.playMinion(minion, pos, -1);
     }
 
-    private static int getDeathrattleMultiplier(BoardState boardState) {
+    private static int getDeathrattleMultiplier(AuraBoard auraBoard) {
 
-        LinkedList<Minion> Rivendares = boardState.contains("Baron Rivendare");
+        LinkedList<Minion> Rivendares = auraBoard.contains("Baron Rivendare");
         if (!Rivendares.isEmpty()) {
             boolean golden = false;
             for (Minion rivendare : Rivendares) {

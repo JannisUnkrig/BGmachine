@@ -100,8 +100,8 @@ public class Player {
             if (toPos < 0 || toPos > myBoard.getBoardSize() || myBoard.getBoardSize() >= 7) return;
             Minion minion = (Minion) card;
 
-            //TODO tests for targeted battlecry
-            if (minion.getName().equals("Rockpool Hunter")) {
+            //tests for targeted battlecries
+            if (minion.getName().equals("Rockpool Hunter") || minion.getName().equals("Toxfin")) {
                 boolean hasMurloc = false;
                 for (Minion possiblyMurloc : myBoard.getBoardMinions()) {
                     if (possiblyMurloc.getTribe() == Tribe.MURLOC || possiblyMurloc.getTribe() == Tribe.ALL) hasMurloc = true;
@@ -109,6 +109,43 @@ public class Player {
                 if (hasMurloc && (targetedPos < 0 || targetedPos >= myBoard.getBoardSize() || (myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.MURLOC
                     && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return;
             }
+
+            if (minion.getName().equals("Nathrezim Overseer")) {
+                boolean hasDemon = false;
+                for (Minion possiblyDemon : myBoard.getBoardMinions()) {
+                    if (possiblyDemon.getTribe() == Tribe.DEMON || possiblyDemon.getTribe() == Tribe.ALL) hasDemon = true;
+                }
+                if (hasDemon && (targetedPos < 0 || targetedPos >= myBoard.getBoardSize() || (myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.DEMON
+                        && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return;
+            }
+
+            if (minion.getName().equals("Houndmaster") || minion.getName().equals("Virmen Sensei")) {
+                boolean hasBeast = false;
+                for (Minion possiblyBeast : myBoard.getBoardMinions()) {
+                    if (possiblyBeast.getTribe() == Tribe.BEAST || possiblyBeast.getTribe() == Tribe.ALL) hasBeast = true;
+                }
+                if (hasBeast && (targetedPos < 0 || targetedPos >= myBoard.getBoardSize() || (myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.BEAST
+                        && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return;
+            }
+
+            if (minion.getName().equals("Screwjank Clunker")) {
+                boolean hasMech = false;
+                for (Minion possiblyMech : myBoard.getBoardMinions()) {
+                    if (possiblyMech.getTribe() == Tribe.MECH || possiblyMech.getTribe() == Tribe.ALL) hasMech = true;
+                }
+                if (hasMech && (targetedPos < 0 || targetedPos >= myBoard.getBoardSize() || (myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.MECH
+                        && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return;
+            }
+
+            if (minion.getName().equals("Twilight Emissary")) {
+                boolean hasDragon = false;
+                for (Minion possiblyDragon : myBoard.getBoardMinions()) {
+                    if (possiblyDragon.getTribe() == Tribe.DRAGON || possiblyDragon.getTribe() == Tribe.ALL) hasDragon = true;
+                }
+                if (hasDragon && (targetedPos < 0 || targetedPos >= myBoard.getBoardSize() || (myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.DRAGON
+                        && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return;
+            }
+
 
             handCards.remove(fromPos);
             myBoard.playMinion(minion, toPos, targetedPos);
@@ -182,7 +219,7 @@ public class Player {
 
             for(Minion triplePart : tripleProgress) {
                 if (inHand.contains(triplePart)) handCards.remove(triplePart);
-                else if (onBoard.contains(triplePart)) myBoard.getBoardMinions().remove(triplePart);
+                else if (onBoard.contains(triplePart)) myBoard.removeMinion(myBoard.getBoardMinions().indexOf(triplePart));
                 triplePart.addAttack(-1 * goldenMinion.getAttack());
                 triplePart.addHealth(-1 * goldenMinion.getHealth());
             }

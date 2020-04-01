@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class Board implements IBoard {
 
-    private BoardState myBoardState = new BoardState();
+    private AuraBoard myAuraBoard = new AuraBoard();
     private Player myPlayer;
     private int pogoCounter = 0;
 
@@ -72,10 +72,10 @@ public class Board implements IBoard {
                 for (int i = 0; i < howOften; i++) {
                     if (!minion.isGolden()) {
                         getBoardMinion(targetedPos).addAttack(1);
-                        getBoardMinion(targetedPos).addHealth(1);
+                        myAuraBoard.addHealthTo(getBoardMinion(targetedPos), 1);
                     } else {
                         getBoardMinion(targetedPos).addAttack(2);
-                        getBoardMinion(targetedPos).addHealth(2);
+                        myAuraBoard.addHealthTo(getBoardMinion(targetedPos), 2);
                     }
                 }
             }
@@ -86,11 +86,11 @@ public class Board implements IBoard {
             for (Minion ww : wrathWeavers) {
                 if (!ww.isGolden()) {
                     ww.addAttack(2);
-                    ww.addHealth(2);
+                    myAuraBoard.addHealthTo(ww, 2);
                     reducePlayerHealth(1);
                 } else {
                     ww.addAttack(4);
-                    ww.addHealth(4);
+                    myAuraBoard.addHealthTo(ww, 4);
                     reducePlayerHealth(1);
                 }
             }
@@ -111,15 +111,34 @@ public class Board implements IBoard {
             }
         }
 
+        if(minion.getName().equals("Nathrezim Overseer")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            boolean hasDemon = false;
+            for (Minion possiblyDemon : getBoardMinions()) {
+                if (possiblyDemon.getTribe() == Tribe.DEMON || possiblyDemon.getTribe() == Tribe.ALL) hasDemon = true;
+            }
+            if (hasDemon) {
+                for (int i = 0; i < howOften; i++) {
+                    if (!minion.isGolden()) {
+                        getBoardMinion(targetedPos).addAttack(2);
+                        myAuraBoard.addHealthTo(getBoardMinion(targetedPos), 2);
+                    } else {
+                        getBoardMinion(targetedPos).addAttack(4);
+                        myAuraBoard.addHealthTo(getBoardMinion(targetedPos), 4);
+                    }
+                }
+            }
+        }
+
         if(minion.getName().equals("Pogo-Hopper")) {
             int howOften = getBattlecryMultiplierAndTriggerLovers();
             for (int i = 0; i < howOften; i++) {
                 if (!minion.isGolden()) {
                     minion.addAttack(2 * pogoCounter);
-                    minion.addHealth(2 * pogoCounter);
+                    myAuraBoard.addHealthTo(minion, 2 * pogoCounter);
                 } else {
                     minion.addAttack(4 * pogoCounter);
-                    minion.addHealth(4 * pogoCounter);
+                    myAuraBoard.addHealthTo(minion, 4 * pogoCounter);
                 }
             }
             pogoCounter++;
@@ -159,40 +178,40 @@ public class Board implements IBoard {
                        Minion luckyOne = beasts.get(0);
                        if (!minion.isGolden()) {
                            luckyOne.addAttack(1);
-                           luckyOne.addHealth(1);
+                           myAuraBoard.addHealthTo(luckyOne, 1);
                        } else {
                            luckyOne.addAttack(2);
-                           luckyOne.addHealth(2);
+                           myAuraBoard.addHealthTo(luckyOne, 2);
                        }
                    }
                     if (!dragons.isEmpty()) {
                         Minion luckyOne = dragons.get(0);
                         if (!minion.isGolden()) {
                             luckyOne.addAttack(1);
-                            luckyOne.addHealth(1);
+                            myAuraBoard.addHealthTo(luckyOne, 1);
                         } else {
                             luckyOne.addAttack(2);
-                            luckyOne.addHealth(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
                         }
                     }
                     if (!murlocs.isEmpty()) {
                         Minion luckyOne = murlocs.get(0);
                         if (!minion.isGolden()) {
                             luckyOne.addAttack(1);
-                            luckyOne.addHealth(1);
+                            myAuraBoard.addHealthTo(luckyOne, 1);
                         } else {
                             luckyOne.addAttack(2);
-                            luckyOne.addHealth(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
                         }
                     }
                     if (!alls.isEmpty()) {
                         Minion luckyOne = alls.get(0);
                         if (!minion.isGolden()) {
                             luckyOne.addAttack(1);
-                            luckyOne.addHealth(1);
+                            myAuraBoard.addHealthTo(luckyOne, 1);
                         } else {
                             luckyOne.addAttack(2);
-                            luckyOne.addHealth(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
                         }
                     }
                 } else {
@@ -202,57 +221,399 @@ public class Board implements IBoard {
                         Minion luckyOne = beasts.get(0);
                         if (!minion.isGolden()) {
                             luckyOne.addAttack(1);
-                            luckyOne.addHealth(1);
+                            myAuraBoard.addHealthTo(luckyOne, 1);
                         } else {
                             luckyOne.addAttack(2);
-                            luckyOne.addHealth(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
                         }
                     }
                     if (ignoredTribe != 1) {
                         Minion luckyOne = dragons.get(0);
                         if (!minion.isGolden()) {
                             luckyOne.addAttack(1);
-                            luckyOne.addHealth(1);
+                            myAuraBoard.addHealthTo(luckyOne, 1);
                         } else {
                             luckyOne.addAttack(2);
-                            luckyOne.addHealth(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
                         }
                     }
                     if (ignoredTribe != 2) {
                         Minion luckyOne = murlocs.get(0);
                         if (!minion.isGolden()) {
                             luckyOne.addAttack(1);
-                            luckyOne.addHealth(1);
+                            myAuraBoard.addHealthTo(luckyOne, 1);
                         } else {
                             luckyOne.addAttack(2);
-                            luckyOne.addHealth(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
                         }
                     }
                     if (ignoredTribe != 3) {
                         Minion luckyOne = alls.get(0);
                         if (!minion.isGolden()) {
                             luckyOne.addAttack(1);
-                            luckyOne.addHealth(1);
+                            myAuraBoard.addHealthTo(luckyOne, 1);
                         } else {
                             luckyOne.addAttack(2);
-                            luckyOne.addHealth(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
                         }
                     }
                 }
             }
         }
 
-        myBoardState.playMinion(minion, pos, -1);
+        if(minion.getName().equals("Coldlight Seer")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            for (int i = 0; i < howOften; i++) {
+                for (Minion ideallyMurloc : getBoardMinions()) {
+                    if (ideallyMurloc.getTribe() == Tribe.MURLOC || ideallyMurloc.getTribe() == Tribe.ALL) {
+                        if (!minion.isGolden()) {
+                            myAuraBoard.addHealthTo(ideallyMurloc, 2);
+                        } else {
+                            myAuraBoard.addHealthTo(ideallyMurloc, 4);
+                        }
+                    }
+                }
+            }
+        }
+
+        if(minion.getName().equals("Crystalweaver")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            for (int i = 0; i < howOften; i++) {
+                for (Minion ideallyDemon : getBoardMinions()) {
+                    if (ideallyDemon.getTribe() == Tribe.DEMON || ideallyDemon.getTribe() == Tribe.ALL) {
+                        if (!minion.isGolden()) {
+                            ideallyDemon.addAttack(1);
+                            myAuraBoard.addHealthTo(ideallyDemon, 1);
+                        } else {
+                            ideallyDemon.addAttack(2);
+                            myAuraBoard.addHealthTo(ideallyDemon, 2);
+                        }
+                    }
+                }
+            }
+        }
+
+        if(minion.getName().equals("Felfin Navigator")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            for (int i = 0; i < howOften; i++) {
+                for (Minion ideallyMurloc : getBoardMinions()) {
+                    if (ideallyMurloc.getTribe() == Tribe.MURLOC || ideallyMurloc.getTribe() == Tribe.ALL) {
+                        if (!minion.isGolden()) {
+                            ideallyMurloc.addAttack(1);
+                            myAuraBoard.addHealthTo(ideallyMurloc, 1);
+                        } else {
+                            ideallyMurloc.addAttack(2);
+                            myAuraBoard.addHealthTo(ideallyMurloc, 2);
+                        }
+                    }
+                }
+            }
+        }
+
+        if(minion.getName().equals("Houndmaster")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            boolean hasBeast = false;
+            for (Minion possiblyBeast : getBoardMinions()) {
+                if (possiblyBeast.getTribe() == Tribe.BEAST || possiblyBeast.getTribe() == Tribe.ALL) hasBeast = true;
+            }
+            if (hasBeast) {
+                for (int i = 0; i < howOften; i++) {
+                    getBoardMinion(targetedPos).setTaunt(true);
+                    if (!minion.isGolden()) {
+                        getBoardMinion(targetedPos).addAttack(2);
+                        myAuraBoard.addHealthTo(getBoardMinion(targetedPos), 2);
+                    } else {
+                        getBoardMinion(targetedPos).addAttack(4);
+                        myAuraBoard.addHealthTo(getBoardMinion(targetedPos), 4);
+                    }
+                }
+            }
+        }
+
+        if(minion.getName().equals("Screwjank Clunker")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            boolean hasMech = false;
+            for (Minion possiblyMech : getBoardMinions()) {
+                if (possiblyMech.getTribe() == Tribe.MECH || possiblyMech.getTribe() == Tribe.ALL) hasMech = true;
+            }
+            if (hasMech) {
+                for (int i = 0; i < howOften; i++) {
+                    if (!minion.isGolden()) {
+                        getBoardMinion(targetedPos).addAttack(2);
+                        myAuraBoard.addHealthTo(getBoardMinion(targetedPos), 2);
+                    } else {
+                        getBoardMinion(targetedPos).addAttack(4);
+                        myAuraBoard.addHealthTo(getBoardMinion(targetedPos), 4);
+                    }
+                }
+            }
+        }
+
+        if(minion.getName().equals("Twilight Emissary")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            boolean hasDragon = false;
+            for (Minion possiblyDragon : getBoardMinions()) {
+                if (possiblyDragon.getTribe() == Tribe.DRAGON || possiblyDragon.getTribe() == Tribe.ALL) hasDragon = true;
+            }
+            if (hasDragon) {
+                for (int i = 0; i < howOften; i++) {
+                    if (!minion.isGolden()) {
+                        getBoardMinion(targetedPos).addAttack(2);
+                        myAuraBoard.addHealthTo(getBoardMinion(targetedPos), 2);
+                    } else {
+                        getBoardMinion(targetedPos).addAttack(4);
+                        myAuraBoard.addHealthTo(getBoardMinion(targetedPos), 4);
+                    }
+                }
+            }
+        }
+
+        if(minion.getName().equals("Defender of Argus")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            boolean hasLeft = false;
+            boolean hasRight = false;
+            if (pos - 1 >= 0) hasLeft = true;
+            if (pos < getBoardSize()) hasRight = true;
+
+            for (int i = 0; i < howOften; i++) {
+                if (hasLeft) {
+                    getBoardMinion(pos - 1).setTaunt(true);
+                    if (!minion.isGolden()) {
+                        getBoardMinion(pos - 1).addAttack(1);
+                        myAuraBoard.addHealthTo(getBoardMinion(pos - 1), 1);
+                    } else {
+                        getBoardMinion(pos - 1).addAttack(2);
+                        myAuraBoard.addHealthTo(getBoardMinion(pos - 1), 2);
+                    }
+                }
+                if (hasRight) {
+                    getBoardMinion(pos).setTaunt(true);
+                    if (!minion.isGolden()) {
+                        getBoardMinion(pos).addAttack(1);
+                        myAuraBoard.addHealthTo(getBoardMinion(pos), 1);
+                    } else {
+                        getBoardMinion(pos).addAttack(2);
+                        myAuraBoard.addHealthTo(getBoardMinion(pos), 2);
+                    }
+                }
+            }
+        }
+
+        if(minion.getName().equals("Menagerie Magician")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            for (int i = 0; i < howOften; i++) {
+                LinkedList<Minion> board = getBoardMinions();
+                LinkedList<Minion> beasts = new LinkedList<>();
+                LinkedList<Minion> dragons = new LinkedList<>();
+                LinkedList<Minion> murlocs = new LinkedList<>();
+                LinkedList<Minion> alls = new LinkedList<>();
+
+                for (Minion tribedMinion : board) {
+                    if (tribedMinion.getTribe() == Tribe.BEAST) {
+                        beasts.add(tribedMinion);
+                    }
+                    else if (tribedMinion.getTribe() == Tribe.DRAGON) {
+                        dragons.add(tribedMinion);
+                    }
+                    else if (tribedMinion.getTribe() == Tribe.MURLOC) {
+                        murlocs.add(tribedMinion);
+                    }
+                    else if (tribedMinion.getTribe() == Tribe.ALL) {
+                        alls.add(tribedMinion);
+                    }
+                }
+
+                Collections.shuffle(beasts);
+                Collections.shuffle(dragons);
+                Collections.shuffle(murlocs);
+                Collections.shuffle(alls);
+
+                if (beasts.isEmpty() || dragons.isEmpty() || murlocs.isEmpty() || alls.isEmpty()) {
+                    if (!beasts.isEmpty()) {
+                        Minion luckyOne = beasts.get(0);
+                        if (!minion.isGolden()) {
+                            luckyOne.addAttack(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
+                        } else {
+                            luckyOne.addAttack(4);
+                            myAuraBoard.addHealthTo(luckyOne, 4);
+                        }
+                    }
+                    if (!dragons.isEmpty()) {
+                        Minion luckyOne = dragons.get(0);
+                        if (!minion.isGolden()) {
+                            luckyOne.addAttack(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
+                        } else {
+                            luckyOne.addAttack(4);
+                            myAuraBoard.addHealthTo(luckyOne, 4);
+                        }
+                    }
+                    if (!murlocs.isEmpty()) {
+                        Minion luckyOne = murlocs.get(0);
+                        if (!minion.isGolden()) {
+                            luckyOne.addAttack(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
+                        } else {
+                            luckyOne.addAttack(4);
+                            myAuraBoard.addHealthTo(luckyOne, 4);
+                        }
+                    }
+                    if (!alls.isEmpty()) {
+                        Minion luckyOne = alls.get(0);
+                        if (!minion.isGolden()) {
+                            luckyOne.addAttack(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
+                        } else {
+                            luckyOne.addAttack(4);
+                            myAuraBoard.addHealthTo(luckyOne, 4);
+                        }
+                    }
+                } else {
+                    //might be incorrect since this favors minions in a tribe with a small number on board
+                    int ignoredTribe = new Random().nextInt(4);
+                    if (ignoredTribe != 0) {
+                        Minion luckyOne = beasts.get(0);
+                        if (!minion.isGolden()) {
+                            luckyOne.addAttack(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
+                        } else {
+                            luckyOne.addAttack(4);
+                            myAuraBoard.addHealthTo(luckyOne, 4);
+                        }
+                    }
+                    if (ignoredTribe != 1) {
+                        Minion luckyOne = dragons.get(0);
+                        if (!minion.isGolden()) {
+                            luckyOne.addAttack(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
+                        } else {
+                            luckyOne.addAttack(4);
+                            myAuraBoard.addHealthTo(luckyOne, 4);
+                        }
+                    }
+                    if (ignoredTribe != 2) {
+                        Minion luckyOne = murlocs.get(0);
+                        if (!minion.isGolden()) {
+                            luckyOne.addAttack(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
+                        } else {
+                            luckyOne.addAttack(4);
+                            myAuraBoard.addHealthTo(luckyOne, 4);
+                        }
+                    }
+                    if (ignoredTribe != 3) {
+                        Minion luckyOne = alls.get(0);
+                        if (!minion.isGolden()) {
+                            luckyOne.addAttack(2);
+                            myAuraBoard.addHealthTo(luckyOne, 2);
+                        } else {
+                            luckyOne.addAttack(4);
+                            myAuraBoard.addHealthTo(luckyOne, 4);
+                        }
+                    }
+                }
+            }
+        }
+
+        if(minion.getName().equals("Toxfin")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            boolean hasMurloc = false;
+            for (Minion possiblyMurloc : getBoardMinions()) {
+                if (possiblyMurloc.getTribe() == Tribe.MURLOC || possiblyMurloc.getTribe() == Tribe.ALL) hasMurloc = true;
+            }
+            if (hasMurloc) {
+                for (int i = 0; i < howOften; i++) {
+                    getBoardMinion(targetedPos).setPoisonous(true);
+                }
+            }
+        }
+
+        if(minion.getName().equals("Virmen Sensei")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            boolean hasBeast = false;
+            for (Minion possiblyBeast : getBoardMinions()) {
+                if (possiblyBeast.getTribe() == Tribe.BEAST || possiblyBeast.getTribe() == Tribe.ALL) hasBeast = true;
+            }
+            if (hasBeast) {
+                for (int i = 0; i < howOften; i++) {
+                    if (!minion.isGolden()) {
+                        getBoardMinion(targetedPos).addAttack(2);
+                        myAuraBoard.addHealthTo(getBoardMinion(targetedPos), 2);
+                    } else {
+                        getBoardMinion(targetedPos).addAttack(4);
+                        myAuraBoard.addHealthTo(getBoardMinion(targetedPos), 4);
+                    }
+                }
+            }
+        }
+
+        if(minion.getName().equals("Annihilan Battlemaster")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            for (int i = 0; i < howOften; i++) {
+                //TODO exception for patchwerk
+                myAuraBoard.addHealthTo(minion, (40 - myPlayer.getHealth()));
+            }
+        }
+
+        if(minion.getName().equals("King Bagurgle")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            for (int i = 0; i < howOften; i++) {
+                for (Minion ideallyMurloc : getBoardMinions()) {
+                    if (ideallyMurloc.getTribe() == Tribe.MURLOC || ideallyMurloc.getTribe() == Tribe.ALL) {
+                        if (!minion.isGolden()) {
+                            ideallyMurloc.addAttack(2);
+                            myAuraBoard.addHealthTo(ideallyMurloc, 2);
+                        } else {
+                            ideallyMurloc.addAttack(4);
+                            myAuraBoard.addHealthTo(ideallyMurloc, 4);
+                        }
+                    }
+                }
+            }
+        }
+
+        if(minion.getName().equals("Primalfin Lookout")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            boolean hasMurloc = false;
+            for (Minion ideallyMurloc : getBoardMinions()) {
+                if (ideallyMurloc.getTribe() == Tribe.MURLOC || ideallyMurloc.getTribe() == Tribe.ALL) hasMurloc = true;
+            }
+            if (hasMurloc) {
+                for (int i = 0; i < howOften; i++) {
+                    //TODO find out if all murlocs are equally likely. does draw from pool and can go below 0 in pool
+                }
+            }
+        }
+
+        if(minion.getName().equals("Strongshell Scavenger")) {
+            int howOften = getBattlecryMultiplierAndTriggerLovers();
+            for (int i = 0; i < howOften; i++) {
+                for (Minion ideallyTaunted : getBoardMinions()) {
+                    if (ideallyTaunted.isTaunt()) {
+                        if (!minion.isGolden()) {
+                            ideallyTaunted.addAttack(2);
+                            myAuraBoard.addHealthTo(ideallyTaunted, 2);
+                        } else {
+                            ideallyTaunted.addAttack(4);
+                            myAuraBoard.addHealthTo(ideallyTaunted, 4);
+                        }
+                    }
+                }
+            }
+        }
+
+        myAuraBoard.playMinion(minion, pos, -1);
     }
 
     @Override
     public void moveMinion(int fromPos, int toPos) {
-        myBoardState.moveMinion(fromPos, toPos);
+        myAuraBoard.moveMinion(fromPos, toPos);
     }
 
     @Override
     public void removeMinion(int pos) {
-        myBoardState.removeMinion(pos);
+        myAuraBoard.removeMinion(pos);
     }
 
 
@@ -285,7 +646,7 @@ public class Board implements IBoard {
             }
         }
 
-        myBoardState.playMinion(minion, pos, -1);
+        myAuraBoard.playMinion(minion, pos, -1);
 
         myPlayer.checkForTriple(minion);
     }
@@ -301,10 +662,10 @@ public class Board implements IBoard {
             for (Minion cf : crowdFavorites) {
                 if (!cf.isGolden()) {
                     cf.addAttack(1);
-                    cf.addHealth(1);
+                    myAuraBoard.addHealthTo(cf, 1);
                 } else {
                     cf.addAttack(2);
-                    cf.addHealth(2);
+                    myAuraBoard.addHealthTo(cf, 2);
                 }
             }
         }
@@ -322,7 +683,7 @@ public class Board implements IBoard {
             for (Minion ideallyDragon : getBoardMinions()) {
                 if (ideallyDragon.getTribe() == Tribe.DRAGON || ideallyDragon.getTribe() == Tribe.ALL) {
                     ideallyDragon.addAttack(buffs);
-                    ideallyDragon.addHealth(buffs);
+                    myAuraBoard.addHealthTo(ideallyDragon, buffs);
                 }
             }
         }
@@ -347,28 +708,28 @@ public class Board implements IBoard {
 
     @Override
     public LinkedList<Minion> getBoardMinions() {
-        return myBoardState.getBoardMinions();
+        return myAuraBoard.getBoardMinions();
     }
 
     @Override
     public int getBoardSize() {
-        return myBoardState.getBoardSize();
+        return myAuraBoard.getBoardSize();
     }
 
     @Override
     public Minion getBoardMinion(int pos) {
-        return myBoardState.getBoardMinion(pos);
+        return myAuraBoard.getBoardMinion(pos);
     }
 
     public Minion getBoardMinionForDisplay(int pos) {
-        Minion m = new Minion(myBoardState.getBoardMinion(pos));
+        Minion m = new Minion(myAuraBoard.getBoardMinion(pos));
 
         //handling aura effects
-        LinkedList<Minion> murlocWarleaders = contains("Murloc Warleader");
+        /*LinkedList<Minion> murlocWarleaders = contains("Murloc Warleader");
         if (!murlocWarleaders.isEmpty() && (m.getTribe() == Tribe.MURLOC || m.getTribe() == Tribe.ALL)) {
             int buffs = 0;
             for (Minion mwl : murlocWarleaders) {
-                if (myBoardState.getBoardMinions().indexOf(mwl) != pos) {
+                if (myAuraBoard.getBoardMinions().indexOf(mwl) != pos) {
                     if (!mwl.isGolden()) {
                         buffs += 2;
                     } else {
@@ -377,7 +738,7 @@ public class Board implements IBoard {
                 }
             }
             m.addAttack(buffs);
-        }
+        }*/
 
         if(m.getName().equals("Old Murk-Eye")) {
             int murlocCounter = -1;                 //-1 because only other murlocs count
@@ -399,7 +760,7 @@ public class Board implements IBoard {
             }
         }
 
-        if (pos - 1 >= 0) {
+        /*if (pos - 1 >= 0) {
             Minion possiblyDWA = getBoardMinion(pos - 1);
             if(possiblyDWA.getName().equals("Dire Wolf Alpha")){
                 if (!possiblyDWA.isGolden()) {
@@ -418,7 +779,7 @@ public class Board implements IBoard {
                     m.addAttack(2);
                 }
             }
-        }
+        }*/
 
         return m;
     }
@@ -434,11 +795,11 @@ public class Board implements IBoard {
 
     @Override
     public LinkedList<Minion> contains(String minionName) {
-        return myBoardState.contains(minionName);
+        return myAuraBoard.contains(minionName);
     }
 
-    public BoardState getMyBoardState() {
-        return myBoardState;
+    public AuraBoard getMyAuraBoard() {
+        return myAuraBoard;
     }
 
 }

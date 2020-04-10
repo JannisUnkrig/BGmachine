@@ -1,3 +1,5 @@
+package TrainingFacility;
+
 import java.util.LinkedList;
 
 public class Player {
@@ -6,6 +8,7 @@ public class Player {
     private int health = 40;
     private int curGold = 3;
     private int curMaxGold = 3;
+
     private boolean discoveryRunning = false;
     private String discoveryName;
     private LinkedList<Minion> discoverOptions;
@@ -34,37 +37,56 @@ public class Player {
         myBoard.triggerStartOfTurnEffects();
     }
 
-    public void level() {
-        if (discoveryRunning) return;
-        if(curGold < myShop.getTavernTierUpCost()) return;
+    public boolean level() {
+        Game.appendToRightTextArea("\nPlayer " + playerNr + " pressed \"level\"");
+        if (discoveryRunning) return false;
+        if(curGold < myShop.getTavernTierUpCost()) return false;
+        Game.appendToRightTextArea(" (successful)");
+
         curGold -= myShop.getTavernTierUpCost();
         myShop.levelUp();
+        return true;
     }
 
-    public void roll() {
-        if (discoveryRunning) return;
-        if(curGold < 1) return;
+    public boolean roll() {
+        Game.appendToRightTextArea("\nPlayer " + playerNr + " pressed \"roll\"");
+        if (discoveryRunning) return false;
+        if(curGold < 1) return false;
+        Game.appendToRightTextArea(" (successful)");
+
         curGold--;
         myShop.roll();
+        return true;
     }
 
-    public void freeze() {
-        if (discoveryRunning) return;
+    public boolean freeze() {
+        Game.appendToRightTextArea("\nPlayer " + playerNr + " pressed \"freeze\"");
+        if (discoveryRunning) return false;
+        Game.appendToRightTextArea(" (successful)");
+
         myShop.freeze();
+        return true;
     }
 
-    public void buy(int pos) {
-        if (discoveryRunning) return;
-        if (curGold < 3 || handCards.size() >= 10 || pos < 0 || pos >= myShop.getOffers().size()) return;
+    public boolean buy(int pos) {
+        Game.appendToRightTextArea("\nPlayer " + playerNr + " tried buying pos " + pos);
+        if (discoveryRunning) return false;
+        if (curGold < 3 || handCards.size() >= 10 || pos < 0 || pos >= myShop.getOffers().size()) return false;
+        Game.appendToRightTextArea(" (successful)");
+
         curGold -= 3;
         Minion bought = myShop.buy(pos);
         handCards.add(bought);
         checkForTriple(bought);
+        return true;
     }
 
-    public void sell(int pos) {
-        if (discoveryRunning) return;
-        if (pos < 0 || pos >= myBoard.getBoardSize()) return;
+    public boolean sell(int pos) {
+        Game.appendToRightTextArea("\nPlayer " + playerNr + " tried selling pos " + pos);
+        if (discoveryRunning) return false;
+        if (pos < 0 || pos >= myBoard.getBoardSize()) return false;
+        Game.appendToRightTextArea(" (successful)");
+
         if (curGold < 10) curGold++;
 
         Minion possiblySOT = myBoard.getBoardMinion(pos);
@@ -83,21 +105,28 @@ public class Player {
         }
 
         myBoard.removeMinion(pos);
+        return true;
     }
 
-    public void move(int fromPos, int toPos) {
-        if (discoveryRunning) return;
-        if (fromPos < 0 || toPos < 0 || fromPos >= myBoard.getBoardSize() || toPos >= myBoard.getBoardSize()) return;
+    public boolean move(int fromPos, int toPos) {
+        Game.appendToRightTextArea("\nPlayer " + playerNr + " tried moving pos " + fromPos + " to pos " + toPos);
+        if (discoveryRunning) return false;
+        if (fromPos < 0 || toPos < 0 || fromPos >= myBoard.getBoardSize() || toPos >= myBoard.getBoardSize()) return false;
+        Game.appendToRightTextArea(" (successful)");
+
         myBoard.moveMinion(fromPos, toPos);
+        return true;
     }
 
-    public void play(int fromPos, int toPos, int targetedPos) {
-        if (discoveryRunning) return;
-        if (fromPos < 0 || fromPos >= handCards.size()) return;
+    public boolean play(int fromPos, int toPos, int targetedPos) {
+        Game.appendToRightTextArea("\nPlayer " + playerNr + " tried playing pos " + fromPos + " to pos " + toPos + " targeting pos " + targetedPos);
+        if (discoveryRunning) return false;
+        if (fromPos < 0 || fromPos >= handCards.size()) return false;
         Card card = handCards.get(fromPos);
 
         if(card instanceof Minion) {
-            if (toPos < 0 || toPos > myBoard.getBoardSize() || myBoard.getBoardSize() >= 7) return;
+            if (toPos < 0 || toPos > myBoard.getBoardSize() || myBoard.getBoardSize() >= 7) return false;
+            Game.appendToRightTextArea(" (successful)");
             Minion minion = (Minion) card;
 
             //tests for targeted battlecries
@@ -107,7 +136,7 @@ public class Player {
                     if (possiblyMurloc.getTribe() == Tribe.MURLOC || possiblyMurloc.getTribe() == Tribe.ALL) hasMurloc = true;
                 }
                 if (hasMurloc && (targetedPos < 0 || targetedPos >= myBoard.getBoardSize() || (myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.MURLOC
-                    && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return;
+                    && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return false;
             }
 
             if (minion.getName().equals("Nathrezim Overseer")) {
@@ -116,7 +145,7 @@ public class Player {
                     if (possiblyDemon.getTribe() == Tribe.DEMON || possiblyDemon.getTribe() == Tribe.ALL) hasDemon = true;
                 }
                 if (hasDemon && (targetedPos < 0 || targetedPos >= myBoard.getBoardSize() || (myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.DEMON
-                        && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return;
+                        && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return false;
             }
 
             if (minion.getName().equals("Houndmaster") || minion.getName().equals("Virmen Sensei")) {
@@ -125,7 +154,7 @@ public class Player {
                     if (possiblyBeast.getTribe() == Tribe.BEAST || possiblyBeast.getTribe() == Tribe.ALL) hasBeast = true;
                 }
                 if (hasBeast && (targetedPos < 0 || targetedPos >= myBoard.getBoardSize() || (myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.BEAST
-                        && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return;
+                        && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return false;
             }
 
             if (minion.getName().equals("Screwjank Clunker")) {
@@ -134,7 +163,7 @@ public class Player {
                     if (possiblyMech.getTribe() == Tribe.MECH || possiblyMech.getTribe() == Tribe.ALL) hasMech = true;
                 }
                 if (hasMech && (targetedPos < 0 || targetedPos >= myBoard.getBoardSize() || (myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.MECH
-                        && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return;
+                        && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return false;
             }
 
             if (minion.getName().equals("Twilight Emissary")) {
@@ -143,7 +172,7 @@ public class Player {
                     if (possiblyDragon.getTribe() == Tribe.DRAGON || possiblyDragon.getTribe() == Tribe.ALL) hasDragon = true;
                 }
                 if (hasDragon && (targetedPos < 0 || targetedPos >= myBoard.getBoardSize() || (myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.DRAGON
-                        && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return;
+                        && myBoard.getBoardMinion(targetedPos).getTribe() != Tribe.ALL))) return false;
             }
 
 
@@ -163,8 +192,9 @@ public class Player {
 
         if(card instanceof Spell) {
             Spell spell = (Spell) card;
-            if (spell.getCost() > curGold) return;
-            //TODO play spell
+            if (spell.getCost() > curGold) return false;
+            Game.appendToRightTextArea(" (successful)");
+
             if (spell.getName().equals("Triple Reward")) {
                 discoveryRunning = true;
                 discoveryName = "Triple Reward";
@@ -178,11 +208,14 @@ public class Player {
 
             handCards.remove(spell);
         }
+        return true;
     }
 
-    public void choose(int whichOne) {
-        if (!discoveryRunning) return;
-        if (whichOne < 0 || whichOne >= discoverOptions.size()) return;
+    public boolean choose(int whichOne) {
+        Game.appendToRightTextArea("\nPlayer " + playerNr + " tried choosing pos " + whichOne);
+        if (!discoveryRunning) return false;
+        if (whichOne < 0 || whichOne >= discoverOptions.size()) return false;
+        Game.appendToRightTextArea(" (successful)");
 
         if (discoveryName.equals("Triple Reward")) {
             handCards.add(discoverOptions.get(whichOne));
@@ -194,6 +227,7 @@ public class Player {
         }
 
         discoveryRunning = false;
+        return true;
     }
 
 
@@ -269,6 +303,8 @@ public class Player {
         }
         return built;
     }
+
+
 
     public int getPlayerNr() {
         return playerNr;

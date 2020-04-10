@@ -1,3 +1,5 @@
+package TrainingFacility;
+
 import java.util.LinkedList;
 
 public interface IBoard {
@@ -6,7 +8,7 @@ public interface IBoard {
 
     void moveMinion(int fromPos, int toPos);
 
-    void removeMinion(int pos);
+    int removeMinion(int pos);
 
     LinkedList<Minion> getBoardMinions();
 

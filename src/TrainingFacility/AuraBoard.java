@@ -1,3 +1,5 @@
+package TrainingFacility;
+
 import java.util.LinkedList;
 
 public class AuraBoard implements IBoard {
@@ -98,11 +100,13 @@ public class AuraBoard implements IBoard {
 
 
     @Override
-    public void removeMinion(int pos) {
+    public int removeMinion(int pos) {
         Minion m = getBoardMinion(pos);
 
         //wurde von aura affected? TODO proglem mit fiendish und rat
+        int atkBuff = m.getAttack();
         removeAllAurasFrom(m);
+        atkBuff -= m.getAttack();
 
         //war aura giver?
         Aura minionsAura = null;
@@ -117,18 +121,19 @@ public class AuraBoard implements IBoard {
 
         boardMinionsUnaffectedHealth.remove(pos);
         myBoardState.removeMinion(pos);
+        return atkBuff;
     }
 
 
     public void addHealthTo(Minion minion, int howMuch) {
         minion.addHealth(howMuch);
         int index = getBoardMinions().indexOf(minion);
-        if (index != -1) {
+        if (index != -1) {                                  //somehow required for dwa
             boardMinionsUnaffectedHealth.set(index, boardMinionsUnaffectedHealth.get(index) + howMuch);
         }
     }
 
-    public void removeAllAurasFrom(Minion m) {
+    private void removeAllAurasFrom(Minion m) {
         for (Aura a : auras) {
             if (a.affects(m)) a.removeAuraFrom(m);
         }
@@ -159,7 +164,6 @@ public class AuraBoard implements IBoard {
         for (int i = 0; i < myBoardState.getBoardSize(); i++) {
             Minion saveMinion = getBoardMinion(i);
             removeMinion(i);
-            //removeAllAurasFrom(saveMinion);
             Minion copy = new Minion(saveMinion);
             playMinion(saveMinion, i, -1);
 

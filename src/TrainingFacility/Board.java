@@ -1,3 +1,5 @@
+package TrainingFacility;
+
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Random;
@@ -612,8 +614,9 @@ public class Board implements IBoard {
     }
 
     @Override
-    public void removeMinion(int pos) {
+    public int removeMinion(int pos) {
         myAuraBoard.removeMinion(pos);
+        return 1;
     }
 
 
@@ -724,22 +727,7 @@ public class Board implements IBoard {
     public Minion getBoardMinionForDisplay(int pos) {
         Minion m = new Minion(myAuraBoard.getBoardMinion(pos));
 
-        //handling aura effects
-        /*LinkedList<Minion> murlocWarleaders = contains("Murloc Warleader");
-        if (!murlocWarleaders.isEmpty() && (m.getTribe() == Tribe.MURLOC || m.getTribe() == Tribe.ALL)) {
-            int buffs = 0;
-            for (Minion mwl : murlocWarleaders) {
-                if (myAuraBoard.getBoardMinions().indexOf(mwl) != pos) {
-                    if (!mwl.isGolden()) {
-                        buffs += 2;
-                    } else {
-                        buffs += 4;
-                    }
-                }
-            }
-            m.addAttack(buffs);
-        }*/
-
+        //handling murk-eye
         if(m.getName().equals("Old Murk-Eye")) {
             int murlocCounter = -1;                 //-1 because only other murlocs count
             for (Minion possiblyMurloc : getBoardMinions()) {
@@ -759,28 +747,6 @@ public class Board implements IBoard {
                 m.addAttack(murlocCounter * 2);
             }
         }
-
-        /*if (pos - 1 >= 0) {
-            Minion possiblyDWA = getBoardMinion(pos - 1);
-            if(possiblyDWA.getName().equals("Dire Wolf Alpha")){
-                if (!possiblyDWA.isGolden()) {
-                    m.addAttack(1);
-                } else {
-                    m.addAttack(2);
-                }
-            }
-        }
-        if (pos + 1 < getBoardSize()) {
-            Minion possiblyDWA = getBoardMinion(pos + 1);
-            if(possiblyDWA.getName().equals("Dire Wolf Alpha")){
-                if (!possiblyDWA.isGolden()) {
-                    m.addAttack(1);
-                } else {
-                    m.addAttack(2);
-                }
-            }
-        }*/
-
         return m;
     }
 

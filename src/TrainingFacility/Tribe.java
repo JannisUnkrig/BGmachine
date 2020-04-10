@@ -1,3 +1,5 @@
+package TrainingFacility;
+
 public enum Tribe {
     NONE, ALL, BEAST, DEMON, DRAGON, MECH, MURLOC;
 

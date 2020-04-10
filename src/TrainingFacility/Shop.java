@@ -1,3 +1,5 @@
+package TrainingFacility;
+
 import java.util.LinkedList;
 
 public class Shop {

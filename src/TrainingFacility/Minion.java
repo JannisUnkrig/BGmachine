@@ -1,3 +1,5 @@
+package TrainingFacility;
+
 public class Minion extends Card {
 
     private int id;

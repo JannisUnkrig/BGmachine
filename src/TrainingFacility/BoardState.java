@@ -1,3 +1,5 @@
+package TrainingFacility;
+
 import java.util.LinkedList;
 
 public class BoardState implements IBoard {
@@ -18,9 +20,10 @@ public class BoardState implements IBoard {
     }
 
     @Override
-    public void removeMinion(int pos) {
+    public int removeMinion(int pos) {
         MinionPool.returnMinion(boardMinions.get(pos));
         boardMinions.remove(pos);
+        return 1;
     }
 
     public BoardState getDeepCopyOfThis() {

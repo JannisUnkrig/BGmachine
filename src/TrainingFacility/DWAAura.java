@@ -1,3 +1,5 @@
+package TrainingFacility;
+
 public class DWAAura extends Aura {
 
     public DWAAura(AuraBoard auraBoard, Minion auraGiver, int attackBuff) {
@@ -51,7 +53,7 @@ public class DWAAura extends Aura {
                 affectedMinions.add(0, new Minion());
             }
         } else if (myAuraBoard.getBoardMinions().indexOf(minion) == myAuraBoard.getBoardMinions().indexOf(auraGiver) + 1) {
-            if (myAuraBoard.getBoardMinions().indexOf(auraGiver) + 2 <= myAuraBoard.getBoardSize()) {
+            if (myAuraBoard.getBoardMinions().indexOf(auraGiver) + 2 < myAuraBoard.getBoardSize()) {
                 Minion newOne = myAuraBoard.getBoardMinion(myAuraBoard.getBoardMinions().indexOf(auraGiver) + 2);
                 newOne.addAttack(attackBuff);
                 affectedMinions.add(1, newOne);

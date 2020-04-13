@@ -19,7 +19,7 @@ public class AgentV1 {
     private static double epsilon = 0.5;                                //how often the nn chooses randomly (0 = no randomness, 1 = absolut randomness)
     private static final int ERSSize = 10000;
     private static final double unusualSampleFactor = 0.9;              //how much samples with very high/low rewards are prefered in learning phase (0 = 100% bias for highest reward, 1 no biasing)
-    private static final int numberOfImprovementsPerSession = 100;      //only applys if not explicitly choosing another one
+    private static final int miniBatchSize = 100;
     private static final int numberOfImprovementsUntillTargetNetworkGetsUpdated = 20;
     private static int targetUpdateCounter = 0;
     private static double learningRate = 0.1;                           //aka alpha
@@ -50,56 +50,64 @@ public class AgentV1 {
     public static void improve(int howOften) {
         //biasing towards very high/low rewards
         //sorting high/low rewards first
-        int[][] curERS = new int[howFullIsERS][];
-        System.arraycopy(experienceReplayStorage, 0, curERS, 0, howFullIsERS);
-        Arrays.sort(curERS, (ints, ints2) -> {
+        int[][] sortedERS = new int[howFullIsERS][];
+        System.arraycopy(experienceReplayStorage, 0, sortedERS, 0, howFullIsERS);
+        Arrays.sort(sortedERS, (ints, ints2) -> {
             if (Math.abs(ints[inputNodes + 1]) < Math.abs(ints2[inputNodes + 1])) return 1;
             else if (Math.abs(ints[inputNodes + 1]) == Math.abs(ints2[inputNodes + 1])) return 0;
             return -1;
         });
 
-        for (int i = 0; i < howOften; i++) {
-            //TODO actually bias the sorted ERS
-            int[] sample = curERS[new Random().nextInt(curERS.length)];
-
-            //state at time t
-            int[] state1 = new int[inputNodes];
-            System.arraycopy(sample, 0, state1, 0, inputNodes);
-
-            //reward for action at time t
-            int reward = sample[inputNodes + 1];
-
-            //state at time t+1 (only relevant if not a terminal state)
-            int[] state2 = new int[inputNodes];
-            System.arraycopy(sample, inputNodes + 2, state2, 0, inputNodes);
-
-            //state at time t terminal state?
-            boolean terminal = false;
-            if (sample[sample.length - 1] > 0) terminal = true;
+        for (int j = 0; j < howOften; j++) {
+            for (int i = 0; i < miniBatchSize; i++) {
+                //TODO actually bias the sorted ERS
+                int[] sample = sortedERS[new Random().nextInt(sortedERS.length)];
 
 
-            //prediction for chosen action in state1
-            double prediction = collectiveBrain.calcOutputs(state1)[inputNodes];
+                //state at time t
+                int[] state1 = new int[inputNodes];
+                System.arraycopy(sample, 0, state1, 0, inputNodes);
 
-            //target for the prediction (==reward + discountFactor * max reward of state2)
-            double target = 0;
-            //terminal state
-            if (terminal) {
-                target = reward;
-            }
-            //not a terminal state
-            else {
-                double[] evaluations = targetNetwork.calcOutputs(state2);
-                double biggestFutureReward = Double.MIN_VALUE;
-                for (double evaluation : evaluations) {
-                    if (evaluation > biggestFutureReward) biggestFutureReward = evaluation;
+                //action at time t
+                int action = sample[inputNodes];
+
+                //reward for action at time t
+                int reward = sample[inputNodes + 1];
+
+                //state at time t+1 (only relevant if not a terminal state)
+                int[] state2 = new int[inputNodes];
+                System.arraycopy(sample, inputNodes + 2, state2, 0, inputNodes);
+
+                //state at time t terminal state?
+                boolean terminal = false;
+                if (sample[sample.length - 1] > 0) terminal = true;
+
+
+                //target for the prediction for the chosen action (==reward + discountFactor * max reward of state2)
+                double targetForChosenAction;
+                //terminal state
+                if (terminal) {
+                    targetForChosenAction = reward;
                 }
-                target = reward + discountFactor * (biggestFutureReward);
+                //not a terminal state
+                else {
+                    double[] evaluations = targetNetwork.calcOutputs(state2);
+                    double biggestFutureReward = Double.MIN_VALUE;
+                    for (double evaluation : evaluations) {
+                        if (evaluation > biggestFutureReward) biggestFutureReward = evaluation;
+                    }
+                    targetForChosenAction = reward + discountFactor * (biggestFutureReward);
+                }
+
+                //prediction for chosen action in state1
+                collectiveBrain.forwardPropagate(state1);
+
+                collectiveBrain.backPropagate(action, targetForChosenAction);
+
+                //TODO fetch gradients
             }
 
-            double error = (target - prediction) * (target - prediction);
-
-            //TODO gradient descent at collectiveBrain
+            //TODO average out gradients, negate them and then update collectiveBrain
 
             targetUpdateCounter++;
             if (targetUpdateCounter >= numberOfImprovementsUntillTargetNetworkGetsUpdated) {

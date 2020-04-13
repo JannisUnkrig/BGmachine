@@ -9,6 +9,11 @@ public class InputLayer implements Layer {
 
     protected double[][] weightsOfOutgoingConnections = null;
 
+    //for forward prop
+    private double[] nodesOutputs;
+    //for back prop
+    private double[][] outgoingConnectionsWeightsGradients = null;
+
 
     /**connects to neighbor layers automatically, initializes weights randomly*/
     public InputLayer(int noOfInputs, Layer nextLayer) {
@@ -44,16 +49,33 @@ public class InputLayer implements Layer {
 
     @Override
     //useless in inputlayer as the input is a state which means encoded with ints
-    public double[] calcOutputs(double[] inputs) {
-        return null;
-    }
+    public double[] calcOutputs(double[] inputs) { return null; }
 
     public double[] calcOutputs(int[] inputs) {
         if(inputs.length != noOfInputs) throw new IllegalArgumentException();
 
         double[] doubleVector = Arrays.stream(inputs).asDoubleStream().toArray();
 
-        return nextLayer.calcOutputs(MatrixVectorMultiply.multiply(weightsOfOutgoingConnections, doubleVector));
+        return nextLayer.calcOutputs(MathHelper.multiply(weightsOfOutgoingConnections, doubleVector));
+    }
+
+
+    @Override
+    //useless in inputlayer as the input is a state which means encoded with ints
+    public void forwardPropagate(double[] inputs) {}
+
+    public void forwardPropagate(int[] inputs) {
+        if(inputs.length != noOfInputs) throw new IllegalArgumentException();
+
+        nodesOutputs = Arrays.stream(inputs).asDoubleStream().toArray();
+
+        nextLayer.forwardPropagate(MathHelper.multiply(weightsOfOutgoingConnections, nodesOutputs));
+    }
+
+
+    @Override
+    public void backPropagate() {
+        //nothing to do
     }
 
 
@@ -63,5 +85,49 @@ public class InputLayer implements Layer {
     }
 
     @Override
-    public void setPreviousLayer(Layer previousLayer) {}        //doesnt need to do anything
+    //useless. there is no previous layer for input layer
+    public void setPreviousLayer(Layer previousLayer) {}
+
+    @Override
+    public double[] getNodesOutputs() {
+        return nodesOutputs;
+    }
+
+    @Override
+    public double[][] getWeightsOfOutgoingConnections() {
+        return weightsOfOutgoingConnections;
+    }
+
+    @Override
+    //useless as no previous layer exists that would need them for calculations in backprop
+    public void setNodesOutputsGradients(double[] nodesOutputsGradients) {}
+
+    @Override
+    //useless
+    public void addNodesOutputsGradients(double[] nodesOutputsGradients) { }
+
+    @Override
+    //useless
+    public double[] getNodesOutputsGradients() {
+        return null;
+    }
+
+    @Override
+    public void setOutgoingConnectionsWeightsGradients(double[][] outgoingConnectionsWeightsGradients) {
+        this.outgoingConnectionsWeightsGradients = outgoingConnectionsWeightsGradients;
+    }
+
+    @Override
+    public double[][] getOutgoingConnectionsWeightsGradients() {
+        return outgoingConnectionsWeightsGradients;
+    }
+
+    @Override
+    public void addOutgoingConnectionsWeightsGradients(double[][] outgoingConnectionsWeightsGradients) {
+        for (int i = 0; i < outgoingConnectionsWeightsGradients.length; i++) {
+            for (int j = 0; j < outgoingConnectionsWeightsGradients[0].length; j++) {
+                this.outgoingConnectionsWeightsGradients[i][j] += outgoingConnectionsWeightsGradients[i][j];
+            }
+        }
+    }
 }

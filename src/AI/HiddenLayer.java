@@ -1,5 +1,7 @@
 package AI;
 
+import java.util.Arrays;
+
 public class HiddenLayer implements Layer {
 
     protected Layer previousLayer;
@@ -7,6 +9,13 @@ public class HiddenLayer implements Layer {
 
     protected double[] biases;
     protected double[][] weightsOfOutgoingConnections;
+
+    //for forward prop
+    private double[] nodesOutputs;
+    //for back prop
+    private double[] biasesGradients = null;
+    private double[] nodesOutputsGradients = null;
+    private double[][] outgoingConnectionsWeightsGradients = null;
 
 
     /**connects to neighbor layers automatically, initializes weights and biases randomly*/
@@ -54,7 +63,80 @@ public class HiddenLayer implements Layer {
             inputs[i] += biases[i];
             inputs[i] = Math.max(inputs[i], 0);
         }
-        return nextLayer.calcOutputs(MatrixVectorMultiply.multiply(weightsOfOutgoingConnections, inputs));
+        return nextLayer.calcOutputs(MathHelper.multiply(weightsOfOutgoingConnections, inputs));
+    }
+
+    public void forwardPropagate(double[] inputs) {
+        if(inputs.length != biases.length) throw new IllegalArgumentException();
+
+        nodesOutputs = new double[inputs.length];
+
+        for (int i = 0; i < inputs.length; i++) {
+            inputs[i] += biases[i];
+            inputs[i] = Math.max(inputs[i], 0);
+            nodesOutputs[i] = inputs[i];
+        }
+        nextLayer.forwardPropagate(MathHelper.multiply(weightsOfOutgoingConnections, nodesOutputs));
+    }
+
+    @Override
+    public void backPropagate() {
+        //all z required in hidden layer
+        double[] z = MathHelper.multiply(previousLayer.getWeightsOfOutgoingConnections(), previousLayer.getNodesOutputs());
+        for (int i = 0; i < biases.length; i++) {
+            z[i] += biases[i];
+        }
+        //all derivatives of ReLU of z
+        double[] dReLU = new double[z.length];
+        for (int i = 0; i < dReLU.length; i++) {
+            dReLU[i] = 1;
+            if (z[i] < 0) dReLU[i] = 0;
+        }
+
+
+        //biasGradients
+        if(biasesGradients == null) biasesGradients = new double[nodesOutputs.length];
+        //calculate gradient for biases (ReLU activation function)
+        for (int i = 0; i < biasesGradients.length; i++) {
+            biasesGradients[i] += dReLU[i] * nodesOutputsGradients[i];
+        }
+
+
+        //previous nodesOutputGradients
+        double[] previousNodesOutputs = previousLayer.getNodesOutputs();
+        double[] previousNodesOutputsGradients = new double[previousNodesOutputs.length];
+
+        for (int i = 0; i < previousNodesOutputsGradients.length; i++) {
+            previousNodesOutputsGradients[i] = 0;
+            //buils a sum as any previous node influences every node in this layer
+            for (int j = 0; j < nodesOutputsGradients.length; j++) {
+                previousNodesOutputsGradients[i] += previousLayer.getWeightsOfOutgoingConnections()[j][i] * dReLU[j] * nodesOutputsGradients[j];
+            }
+        }
+        if (previousLayer.getNodesOutputsGradients() == null) {
+            previousLayer.setNodesOutputsGradients(previousNodesOutputsGradients);
+        } else {
+            previousLayer.addNodesOutputsGradients(previousNodesOutputsGradients);
+        }
+
+        //previous outgoingWeightsGradients
+        double[][] previousWeightsOfOutgoingConnections = previousLayer.getWeightsOfOutgoingConnections();
+        double[][] previousOutgoingConnectionsWeightsGradients = new double[previousWeightsOfOutgoingConnections.length][previousWeightsOfOutgoingConnections[0].length];
+
+        for (int i = 0; i < nodesOutputsGradients.length; i++) {
+            for (int j = 0; j < previousNodesOutputs.length; j++) {
+                //ReLU activation function
+                previousOutgoingConnectionsWeightsGradients[i][j] = previousNodesOutputs[j] * dReLU[i] * nodesOutputsGradients[i];
+            }
+        }
+        if (previousLayer.getOutgoingConnectionsWeightsGradients() == null) {
+            previousLayer.setOutgoingConnectionsWeightsGradients(previousOutgoingConnectionsWeightsGradients);
+        } else {
+            previousLayer.addOutgoingConnectionsWeightsGradients(previousOutgoingConnectionsWeightsGradients);
+        }
+
+        //back prop in next layer
+        previousLayer.backPropagate();
     }
 
 
@@ -67,5 +149,51 @@ public class HiddenLayer implements Layer {
     @Override
     public void setPreviousLayer(Layer previousLayer) {
         this.previousLayer = previousLayer;
+    }
+
+    @Override
+    public double[] getNodesOutputs() {
+        return nodesOutputs;
+    }
+
+    @Override
+    public double[][] getWeightsOfOutgoingConnections() {
+        return weightsOfOutgoingConnections;
+    }
+
+    @Override
+    public void setNodesOutputsGradients(double[] nodesOutputsGradients) {
+        this.nodesOutputsGradients = nodesOutputsGradients;
+    }
+
+    @Override
+    public void addNodesOutputsGradients(double[] nodesOutputsGradients) {
+        for (int i = 0; i < nodesOutputsGradients.length; i++) {
+            this.nodesOutputsGradients[i] += nodesOutputsGradients[i];
+        }
+    }
+
+    @Override
+    public double[] getNodesOutputsGradients() {
+        return nodesOutputsGradients;
+    }
+
+    @Override
+    public void setOutgoingConnectionsWeightsGradients(double[][] outgoingConnectionsWeightsGradients) {
+        this.outgoingConnectionsWeightsGradients = outgoingConnectionsWeightsGradients;
+    }
+
+    @Override
+    public double[][] getOutgoingConnectionsWeightsGradients() {
+        return outgoingConnectionsWeightsGradients;
+    }
+
+    @Override
+    public void addOutgoingConnectionsWeightsGradients(double[][] outgoingConnectionsWeightsGradients) {
+        for (int i = 0; i < outgoingConnectionsWeightsGradients.length; i++) {
+            for (int j = 0; j < outgoingConnectionsWeightsGradients[0].length; j++) {
+                this.outgoingConnectionsWeightsGradients[i][j] += outgoingConnectionsWeightsGradients[i][j];
+            }
+        }
     }
 }

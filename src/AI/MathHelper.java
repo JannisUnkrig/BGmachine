@@ -2,7 +2,7 @@ package AI;
 
 import java.util.Arrays;
 
-public class MatrixVectorMultiply {
+public class MathHelper {
 
     static double[] multiply(double[][] matrix, double[] vector) {
         double[] result = new double[matrix.length];
@@ -16,6 +16,16 @@ public class MatrixVectorMultiply {
             }
         }
 
+        return result;
+    }
+
+    static double multiply(double[] vector1, double[] vector2) {
+        if(vector1.length != vector2.length) throw new IllegalArgumentException();
+
+        double result = 0;
+        for (int i = 0; i < vector1.length; i++) {
+            result += vector1[i] * vector2[i];
+        }
         return result;
     }
 

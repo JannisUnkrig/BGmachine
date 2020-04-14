@@ -27,4 +27,8 @@ public interface Layer {
     void addOutgoingConnectionsWeightsGradients(double[][] outgoingConnectionsWeightsGradients);
 
     void backPropagate();
+
+    void updateWeightsAndBiases(double learningRate);
+
+    void resetGradients();
 }

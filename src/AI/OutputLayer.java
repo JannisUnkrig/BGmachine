@@ -10,6 +10,7 @@ public class OutputLayer implements Layer {
 
     //for forward prop
     private double[] nodesOutputs;
+    private double[] z;
     //for back prop
     private double[] biasesGradients = null;
 
@@ -48,10 +49,12 @@ public class OutputLayer implements Layer {
     public void forwardPropagate(double[] inputs) {
         if(inputs.length != biases.length) throw new IllegalArgumentException();
 
+        z            = new double[inputs.length];
         nodesOutputs = new double[inputs.length];
 
         for (int i = 0; i < inputs.length; i++) {
             inputs[i] += biases[i];
+            z[i] = inputs[i];
             //no activation function
             nodesOutputs[i] = inputs[i];
         }
@@ -63,9 +66,6 @@ public class OutputLayer implements Layer {
 
     public void backPropagate(int chosenAction, double targetForChosenAction) {
         double predictionForChosenAction = nodesOutputs[chosenAction];
-        //only one z required in output layer as i only have the target for one node (==node from chosen action)
-        double z = MathHelper.multiply(previousLayer.getWeightsOfOutgoingConnections()[chosenAction], previousLayer.getNodesOutputs()) + biases[chosenAction];
-
 
         //biasGradients
         if(biasesGradients == null) biasesGradients = new double[nodesOutputs.length];
@@ -79,8 +79,8 @@ public class OutputLayer implements Layer {
         double[] previousNodesOutputsGradients = new double[previousNodesOutputs.length];
 
         for (int i = 0; i < previousNodesOutputsGradients.length; i++) {
-            //this previous nodeOutput influences all outputs, but the prediction - target part cancels itself out for all outputs that aren't the chosen
-            //action, as i dont have target values for these and thus assume the prediction is 100% correct (equal to target) (no activation function)
+            /*this previous nodeOutput influences all outputs, but the prediction - target part cancels itself out for all outputs that aren't the chosen
+            action, as i dont have target values for these and thus assume the prediction is 100% correct (equal to target) (no activation function)*/
             previousNodesOutputsGradients[i] = previousLayer.getWeightsOfOutgoingConnections()[chosenAction][i] * 2 * (predictionForChosenAction - targetForChosenAction);
         }
         if (previousLayer.getNodesOutputsGradients() == null) {
@@ -111,6 +111,18 @@ public class OutputLayer implements Layer {
 
         //back prop in next layer
         previousLayer.backPropagate();
+    }
+
+    @Override
+    public void updateWeightsAndBiases(double learningRate) {
+        for (int i = 0; i < biases.length; i++) {
+            biases[i] -= learningRate * biasesGradients[i];
+        }
+    }
+
+    @Override
+    public void resetGradients() {
+        biasesGradients = null;
     }
 
 

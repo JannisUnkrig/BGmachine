@@ -13,6 +13,7 @@ import java.util.LinkedList;
 
 public class Game {
 
+    public static boolean logPlayersActions = true;
     private static boolean running = false;
 
     private static AgentV1[] agentV1s = new AgentV1[8];
@@ -135,6 +136,13 @@ public class Game {
                         return;
                     }
 
+                    if(command.startsWith("log ")) {
+                        boolean b = Boolean.parseBoolean(command.substring(4));
+                        logPlayersActions = b;
+                        textAreaR.append("\nlog player actions: " + b + "\n");
+                        return;
+                    }
+
 
                     //A.I.commands
                     if(command.equals("aiv1move")) {
@@ -151,7 +159,7 @@ public class Game {
                         return;
                     }
 
-                    if(command.startsWith("aiv1turns ") && command.length() == 11 && Character.isDigit(command.charAt(10))) {
+                    if(command.startsWith("aiv1turns ") && command.length() >= 11 && Character.isDigit(command.charAt(10))) {
                         int nr = Integer.parseInt(command.substring(10));
                         agentV1PlaysRounds(nr);
                         textAreaR.append("\n" + nr + " complete turn ones were played by the A.I.\n");
@@ -162,6 +170,23 @@ public class Game {
                         int nr = Integer.parseInt(command.substring(12));
                         AgentV1.improve(nr);
                         textAreaR.append("\nA.I.V1 improved itself " + nr + " times\n");
+                        return;
+                    }
+
+                    if(command.startsWith("aiv1epsilon ") && command.length() >= 13 && Character.isDigit(command.charAt(12))) {
+                        double nr = Double.parseDouble(command.substring(12));
+                        AgentV1.setEpsilon(nr);
+                        textAreaR.append("\nA.I.V1 set its epsilon to " + nr + "\n");
+                        return;
+                    }
+
+                    if(command.startsWith("aiv1train ")) {
+                        String[] splitted = command.split(" ");
+                        int n1 = Integer.parseInt(splitted[1]);
+                        int n2 = Integer.parseInt(splitted[2]);
+                        int n3 = Integer.parseInt(splitted[3]);
+                        trainAgentV1(n1, n2, n3);
+                        textAreaR.append("\nA.I.V1 trained " + n1 + " times with " + n2 + " turns and " + n3 + " improvements per session\n");
                         return;
                     }
 
@@ -370,8 +395,8 @@ public class Game {
                         //SARS gets completed and stored in ERS
                         agent.setEndStateOfCurSARS(0);
 
-                        int newHealt = agent.getAgentPlaysAs().getHealth();
-                        int reward = (newHealt - oldHealth) * 7000;
+                        int newHealth = agent.getAgentPlaysAs().getHealth();
+                        int reward = (newHealth - oldHealth) * 700;
                         agent.addToRewardOfCurSARS(reward);
                         agent.saveCurSARStoERS();
                     }
@@ -394,8 +419,8 @@ public class Game {
 
             agent.setEndStateOfCurSARS(1);
 
-            int reward = player.getLastDamageTaken() * -7000;
-            reward += player.getLastOpponent().getLastDamageTaken() * 1000;
+            int reward = player.getLastDamageTaken() * -700;
+            reward += player.getLastOpponent().getLastDamageTaken() * 100;
             agent.addToRewardOfCurSARS(reward);
 
             agent.saveCurSARStoERS();
@@ -411,6 +436,19 @@ public class Game {
             agentV1PlaysRound();
             startGame();
         }
+    }
+
+    public static void trainAgentV1(int sessions, int turns, int improvements) {
+        boolean save = logPlayersActions;
+        logPlayersActions = false;
+
+        for (int i = 0; i < sessions; i++) {
+            agentV1PlaysRounds(turns);
+            AgentV1.improve(improvements);
+            System.out.println("Session " + (i+1) + " done");
+        }
+
+        logPlayersActions = save;
     }
 
     private static void updateDisplayedPlayer() {

@@ -1,7 +1,5 @@
 package AI;
 
-import java.util.Arrays;
-
 public class HiddenLayer implements Layer {
 
     protected Layer previousLayer;
@@ -12,6 +10,7 @@ public class HiddenLayer implements Layer {
 
     //for forward prop
     private double[] nodesOutputs;
+    private double[] z;
     //for back prop
     private double[] biasesGradients = null;
     private double[] nodesOutputsGradients = null;
@@ -69,23 +68,21 @@ public class HiddenLayer implements Layer {
     public void forwardPropagate(double[] inputs) {
         if(inputs.length != biases.length) throw new IllegalArgumentException();
 
+        z            = new double[inputs.length];
         nodesOutputs = new double[inputs.length];
 
         for (int i = 0; i < inputs.length; i++) {
             inputs[i] += biases[i];
+            z[i] = inputs[i];
             inputs[i] = Math.max(inputs[i], 0);
             nodesOutputs[i] = inputs[i];
         }
+
         nextLayer.forwardPropagate(MathHelper.multiply(weightsOfOutgoingConnections, nodesOutputs));
     }
 
     @Override
     public void backPropagate() {
-        //all z required in hidden layer
-        double[] z = MathHelper.multiply(previousLayer.getWeightsOfOutgoingConnections(), previousLayer.getNodesOutputs());
-        for (int i = 0; i < biases.length; i++) {
-            z[i] += biases[i];
-        }
         //all derivatives of ReLU of z
         double[] dReLU = new double[z.length];
         for (int i = 0; i < dReLU.length; i++) {
@@ -139,7 +136,26 @@ public class HiddenLayer implements Layer {
         previousLayer.backPropagate();
     }
 
+    @Override
+    public void updateWeightsAndBiases(double learningRate) {
+        for (int i = 0; i < biases.length; i++) {
+            biases[i] -= learningRate * biasesGradients[i];
+        }
+        for (int i = 0; i < weightsOfOutgoingConnections.length; i++) {
+            for (int j = 0; j < weightsOfOutgoingConnections[0].length; j++) {
+                weightsOfOutgoingConnections[i][j] -= learningRate * outgoingConnectionsWeightsGradients[i][j];
+            }
+        }
+        nextLayer.updateWeightsAndBiases(learningRate);
+    }
 
+    @Override
+    public void resetGradients() {
+        biasesGradients = null;
+        nodesOutputsGradients = null;
+        outgoingConnectionsWeightsGradients = null;
+        nextLayer.resetGradients();
+    }
 
     @Override
     public double[] getBiases() {

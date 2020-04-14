@@ -58,4 +58,11 @@ public class NeuralNet {
         outputLayer.backPropagate(chosenAction, targetForChosenAction);
     }
 
+    public void updateWeightsAndBiases(double learningRate)  {
+        inputLayer.updateWeightsAndBiases(learningRate);
+    }
+
+    public void resetGradients() {
+        inputLayer.resetGradients();
+    }
 }

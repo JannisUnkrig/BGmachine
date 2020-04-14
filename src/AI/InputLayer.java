@@ -78,6 +78,22 @@ public class InputLayer implements Layer {
         //nothing to do
     }
 
+    @Override
+    public void updateWeightsAndBiases(double learningRate) {
+        for (int i = 0; i < weightsOfOutgoingConnections.length; i++) {
+            for (int j = 0; j < weightsOfOutgoingConnections[0].length; j++) {
+                weightsOfOutgoingConnections[i][j] -= learningRate * outgoingConnectionsWeightsGradients[i][j];
+            }
+        }
+        nextLayer.updateWeightsAndBiases(learningRate);
+    }
+
+    @Override
+    public void resetGradients() {
+        outgoingConnectionsWeightsGradients = null;
+        nextLayer.resetGradients();
+    }
+
 
     @Override
     public double[] getBiases() {

@@ -135,7 +135,7 @@ public class MinionPool {
 
 
     public static void extractMinionsFromFile() throws FileNotFoundException {
-        if (vanillaMinions != null) return;
+        //if (vanillaMinions != null) return;
 
         LinkedList<Minion> minionsLL = new LinkedList<>();
         Scanner scn = new Scanner(new File("C:\\Users\\Jannis\\IdeaProjects\\BGmachine\\src\\TrainingFacility\\minions.txt"));

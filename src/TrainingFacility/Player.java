@@ -38,10 +38,10 @@ public class Player {
     }
 
     public boolean level() {
-        Game.appendToRightTextArea("\nPlayer " + playerNr + " pressed \"level\"");
+        if (Game.logPlayersActions) Game.appendToRightTextArea("\nPlayer " + playerNr + " pressed \"level\"");
         if (discoveryRunning) return false;
         if(curGold < myShop.getTavernTierUpCost()) return false;
-        Game.appendToRightTextArea(" (successful)");
+        if (Game.logPlayersActions) Game.appendToRightTextArea(" (successful)");
 
         curGold -= myShop.getTavernTierUpCost();
         myShop.levelUp();
@@ -49,10 +49,10 @@ public class Player {
     }
 
     public boolean roll() {
-        Game.appendToRightTextArea("\nPlayer " + playerNr + " pressed \"roll\"");
+        if (Game.logPlayersActions) Game.appendToRightTextArea("\nPlayer " + playerNr + " pressed \"roll\"");
         if (discoveryRunning) return false;
         if(curGold < 1) return false;
-        Game.appendToRightTextArea(" (successful)");
+        if (Game.logPlayersActions) Game.appendToRightTextArea(" (successful)");
 
         curGold--;
         myShop.roll();
@@ -60,19 +60,19 @@ public class Player {
     }
 
     public boolean freeze() {
-        Game.appendToRightTextArea("\nPlayer " + playerNr + " pressed \"freeze\"");
+        if (Game.logPlayersActions) Game.appendToRightTextArea("\nPlayer " + playerNr + " pressed \"freeze\"");
         if (discoveryRunning) return false;
-        Game.appendToRightTextArea(" (successful)");
+        if (Game.logPlayersActions) Game.appendToRightTextArea(" (successful)");
 
         myShop.freeze();
         return true;
     }
 
     public boolean buy(int pos) {
-        Game.appendToRightTextArea("\nPlayer " + playerNr + " tried buying pos " + pos);
+        if (Game.logPlayersActions) Game.appendToRightTextArea("\nPlayer " + playerNr + " tried buying pos " + pos);
         if (discoveryRunning) return false;
         if (curGold < 3 || handCards.size() >= 10 || pos < 0 || pos >= myShop.getOffers().size()) return false;
-        Game.appendToRightTextArea(" (successful)");
+        if (Game.logPlayersActions) Game.appendToRightTextArea(" (successful)");
 
         curGold -= 3;
         Minion bought = myShop.buy(pos);
@@ -82,10 +82,10 @@ public class Player {
     }
 
     public boolean sell(int pos) {
-        Game.appendToRightTextArea("\nPlayer " + playerNr + " tried selling pos " + pos);
+        if (Game.logPlayersActions) Game.appendToRightTextArea("\nPlayer " + playerNr + " tried selling pos " + pos);
         if (discoveryRunning) return false;
         if (pos < 0 || pos >= myBoard.getBoardSize()) return false;
-        Game.appendToRightTextArea(" (successful)");
+        if (Game.logPlayersActions) Game.appendToRightTextArea(" (successful)");
 
         if (curGold < 10) curGold++;
 
@@ -109,24 +109,24 @@ public class Player {
     }
 
     public boolean move(int fromPos, int toPos) {
-        Game.appendToRightTextArea("\nPlayer " + playerNr + " tried moving pos " + fromPos + " to pos " + toPos);
+        if (Game.logPlayersActions) Game.appendToRightTextArea("\nPlayer " + playerNr + " tried moving pos " + fromPos + " to pos " + toPos);
         if (discoveryRunning) return false;
         if (fromPos < 0 || toPos < 0 || fromPos >= myBoard.getBoardSize() || toPos >= myBoard.getBoardSize()) return false;
-        Game.appendToRightTextArea(" (successful)");
+        if (Game.logPlayersActions) Game.appendToRightTextArea(" (successful)");
 
         myBoard.moveMinion(fromPos, toPos);
         return true;
     }
 
     public boolean play(int fromPos, int toPos, int targetedPos) {
-        Game.appendToRightTextArea("\nPlayer " + playerNr + " tried playing pos " + fromPos + " to pos " + toPos + " targeting pos " + targetedPos);
+        if (Game.logPlayersActions) Game.appendToRightTextArea("\nPlayer " + playerNr + " tried playing pos " + fromPos + " to pos " + toPos + " targeting pos " + targetedPos);
         if (discoveryRunning) return false;
         if (fromPos < 0 || fromPos >= handCards.size()) return false;
         Card card = handCards.get(fromPos);
 
         if(card instanceof Minion) {
             if (toPos < 0 || toPos > myBoard.getBoardSize() || myBoard.getBoardSize() >= 7) return false;
-            Game.appendToRightTextArea(" (successful)");
+            if (Game.logPlayersActions) Game.appendToRightTextArea(" (successful)");
             Minion minion = (Minion) card;
 
             //tests for targeted battlecries
@@ -193,7 +193,7 @@ public class Player {
         if(card instanceof Spell) {
             Spell spell = (Spell) card;
             if (spell.getCost() > curGold) return false;
-            Game.appendToRightTextArea(" (successful)");
+            if (Game.logPlayersActions) Game.appendToRightTextArea(" (successful)");
 
             if (spell.getName().equals("Triple Reward")) {
                 discoveryRunning = true;
@@ -212,10 +212,10 @@ public class Player {
     }
 
     public boolean choose(int whichOne) {
-        Game.appendToRightTextArea("\nPlayer " + playerNr + " tried choosing pos " + whichOne);
+        if (Game.logPlayersActions) Game.appendToRightTextArea("\nPlayer " + playerNr + " tried choosing pos " + whichOne);
         if (!discoveryRunning) return false;
         if (whichOne < 0 || whichOne >= discoverOptions.size()) return false;
-        Game.appendToRightTextArea(" (successful)");
+        if (Game.logPlayersActions) Game.appendToRightTextArea(" (successful)");
 
         if (discoveryName.equals("Triple Reward")) {
             handCards.add(discoverOptions.get(whichOne));

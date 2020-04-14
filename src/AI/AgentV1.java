@@ -12,18 +12,18 @@ import java.util.Random;
 /** plays turn one.
  * inputs: gold, shop minion 1-3, hand minion 1, board minion 1-2
  * outputs: roll, freeze, buy 1-3, sell 1-2, play, pass turn
- * rewards: illegal move: -1, take one damage: -7000, deal one damage: 1000*/
+ * rewards: illegal move: -3, freeze:-1, take one damage: -700, deal one damage: 100*/
 
 public class AgentV1 {
 
     private static double epsilon = 0.5;                                //how often the nn chooses randomly (0 = no randomness, 1 = absolut randomness)
     private static final int ERSSize = 10000;
     private static final double unusualSampleFactor = 0.9;              //how much samples with very high/low rewards are prefered in learning phase (0 = 100% bias for highest reward, 1 no biasing)
-    private static final int miniBatchSize = 100;
-    private static final int numberOfImprovementsUntillTargetNetworkGetsUpdated = 20;
+    private static final int miniBatchSize = 10;
+    private static final int numberOfImprovementsUntilTargetNetworkGetsUpdated = 20;
     private static int targetUpdateCounter = 0;
-    private static double learningRate = 0.1;                           //aka alpha
-    private static final double discountFactor = 0.1;                   //aka gamma; how much the predicted future value gets discounted. 0 = completly, 1 = not at all
+    private static double learningRate = 0.01;                          //aka alpha
+    private static final double discountFactor = 0.99;                   //aka gamma; how much the predicted future value gets factored in. 0 = completly, 1 = not at all
 
     //update calcCurState and makeAMove when adjusting the following constants
     private static final int inputNodes = 7;
@@ -39,7 +39,7 @@ public class AgentV1 {
 
 
     private static void addToERS(int[] sars) {
-        System.out.println("ERS[" + nextERSIndex + "] = " + Arrays.toString(sars));
+        //if (sars[7] == -1) System.out.println("ERS[" + nextERSIndex + "] = " + Arrays.toString(sars));
         experienceReplayStorage[nextERSIndex] = sars;
         nextERSIndex++;
         if (nextERSIndex >= ERSSize) nextERSIndex = 0;
@@ -103,18 +103,28 @@ public class AgentV1 {
                 collectiveBrain.forwardPropagate(state1);
 
                 collectiveBrain.backPropagate(action, targetForChosenAction);
-
-                //TODO fetch gradients
             }
 
-            //TODO average out gradients, negate them and then update collectiveBrain
+            //update collectiveBrain
+            collectiveBrain.updateWeightsAndBiases(learningRate);
+
+            //reset gradient tracker
+            collectiveBrain.resetGradients();
 
             targetUpdateCounter++;
-            if (targetUpdateCounter >= numberOfImprovementsUntillTargetNetworkGetsUpdated) {
+            if (targetUpdateCounter >= numberOfImprovementsUntilTargetNetworkGetsUpdated) {
                 targetUpdateCounter = 0;
                 targetNetwork = new NeuralNet(collectiveBrain);
             }
         }
+    }
+
+    public static void setEpsilon(double newEpsilon) {
+        epsilon = newEpsilon;
+    }
+
+    public static double getEpsilon() {
+        return epsilon;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -135,19 +145,21 @@ public class AgentV1 {
 
         double[] outputs = collectiveBrain.calcOutputs(curState);
 
-        int indexOfChoosenAction = -1;
+        int indexOfChoosenAction = 1234;
 
-        if (Math.random() < epsilon) {
-            double biggest = Double.MIN_VALUE;
+        if (Math.random() >= epsilon) {
+            double biggest = 1234;
             for (int i = 0; i < outputs.length; i++) {
-                if (outputs[i] > biggest) {
+                if (i== 0 || outputs[i] > biggest) {
                     indexOfChoosenAction = i;
                     biggest = outputs[i];
                 }
             }
+
         } else {
-            indexOfChoosenAction = (int) (Math.random() * outputNodes);
+            indexOfChoosenAction = (int) (Math.random() * ((double) outputNodes));
         }
+
 
         boolean legal = false;
         if      (indexOfChoosenAction == 0) legal = agentPlaysAs.roll();
@@ -161,7 +173,7 @@ public class AgentV1 {
         else if (indexOfChoosenAction == 8) {
             legal = true;
             done = true;
-            Game.appendToRightTextArea("\nPlayer " + agentPlaysAs.getPlayerNr() + " decided he's done with his turn (successful)");
+            if (Game.logPlayersActions) Game.appendToRightTextArea("\nPlayer " + agentPlaysAs.getPlayerNr() + " decided he's done with his turn (successful)");
         }
 
 
@@ -174,7 +186,8 @@ public class AgentV1 {
         newSARS[inputNodes] = indexOfChoosenAction;
 
         //rewards further modified later
-        if (!legal) newSARS[inputNodes + 1] = -1;
+        if (!legal)                     newSARS[inputNodes + 1] = -3;
+        if (indexOfChoosenAction == 1)  newSARS[inputNodes + 1] = -1;
 
         //new state
         curState = calcCurState();

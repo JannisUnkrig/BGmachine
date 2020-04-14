@@ -18,7 +18,7 @@ public class AgentV1 {
 
     private static double epsilon = 0.5;                                //how often the nn chooses randomly (0 = no randomness, 1 = absolut randomness)
     private static final int ERSSize = 10000;
-    private static final double unusualSampleFactor = 0.9;              //how much samples with very high/low rewards are prefered in learning phase (0 = 100% bias for highest reward, 1 no biasing)
+    private static final double unusualSampleFactor = 0.25;             //how much samples with very high/low rewards are prefered in learning phase (0 = 100% bias for highest reward, 1 no biasing)
     private static final int miniBatchSize = 10;
     private static final int numberOfImprovementsUntilTargetNetworkGetsUpdated = 20;
     private static int targetUpdateCounter = 0;
@@ -61,7 +61,10 @@ public class AgentV1 {
         for (int j = 0; j < howOften; j++) {
             for (int i = 0; i < miniBatchSize; i++) {
                 //TODO actually bias the sorted ERS
-                int[] sample = sortedERS[new Random().nextInt(sortedERS.length)];
+                double d = Math.random();
+                d = Math.pow(d, 1/unusualSampleFactor);
+                int idx = (int) (d * sortedERS.length);
+                int[] sample = sortedERS[idx];
 
 
                 //state at time t

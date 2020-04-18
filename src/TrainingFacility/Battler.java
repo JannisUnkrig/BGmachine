@@ -147,7 +147,7 @@ public class Battler {
             p2 = p3;
         }
 
-        Game.appendToLeftTextArea("\n\n\nPlayer " + p1.getPlayerNr() + " vs. Player " + p2.getPlayerNr() + "\n\n");
+        if (Game.logPlayersActions) Game.appendToLeftTextArea("\n\n\nPlayer " + p1.getPlayerNr() + " vs. Player " + p2.getPlayerNr() + "\n\n");
 
         p1b = p1.getMyBoard().getMyAuraBoard().getDeepCopyOfThis();
         p2b = p2.getMyBoard().getMyAuraBoard().getDeepCopyOfThis();
@@ -176,7 +176,7 @@ public class Battler {
                     for (int j = 0; j < howOften; j++) {
                         if (p2b.getBoardSize() > 0) {
                             Minion target = p2b.getBoardMinion(new Random().nextInt(p2b.getBoardSize()));
-                            Game.appendToLeftTextArea("Red Whelp dealt " + howMuchdamage + " damage to " + target.getName() + "\n");
+                            if (Game.logPlayersActions) Game.appendToLeftTextArea("Red Whelp dealt " + howMuchdamage + " damage to " + target.getName() + "\n");
                             dealDamage(p1b, p1RedWhelps.get(i), howMuchdamage, p2b, target);
                         }
                     }
@@ -196,7 +196,7 @@ public class Battler {
                     for (int j = 0; j < howOften; j++) {
                         if (p1b.getBoardSize() > 0) {
                             Minion target = p1b.getBoardMinion(new Random().nextInt(p1b.getBoardSize()));
-                            Game.appendToLeftTextArea("Red Whelp dealt " + howMuchdamage + " damage to " + target.getName() + "\n");
+                            if (Game.logPlayersActions) Game.appendToLeftTextArea("Red Whelp dealt " + howMuchdamage + " damage to " + target.getName() + "\n");
                             dealDamage(p2b, p2RedWhelps.get(i), howMuchdamage, p1b, target);
                         }
                     }
@@ -231,7 +231,7 @@ public class Battler {
             p1.setLastDamageTaken(0);
             p2.setSecondToLastDamageTaken(p2.getLastDamageTaken());
             p2.setLastDamageTaken(0);
-            Game.appendToLeftTextArea("Egg draw!");
+            if (Game.logPlayersActions) Game.appendToLeftTextArea("Egg draw!");
 
         } else if(p1b.getBoardSize() > 0) {
             int damage = p1.getMyShop().getTavernTier();
@@ -243,7 +243,7 @@ public class Battler {
             p2.setLastDamageTaken(damage);
             p1.setSecondToLastDamageTaken(p1.getLastDamageTaken());
             p1.setLastDamageTaken(0);
-            Game.appendToLeftTextArea("Player " + p1.getPlayerNr() + " won!\nPlayer " + p2.getPlayerNr() + " will take " + damage + " damage");
+            if (Game.logPlayersActions) Game.appendToLeftTextArea("Player " + p1.getPlayerNr() + " won!\nPlayer " + p2.getPlayerNr() + " will take " + damage + " damage");
 
         } else if(p2b.getBoardSize() > 0) {
             int damage = p2.getMyShop().getTavernTier();
@@ -255,14 +255,14 @@ public class Battler {
             p1.setLastDamageTaken(damage);
             p2.setSecondToLastDamageTaken(p2.getLastDamageTaken());
             p2.setLastDamageTaken(0);
-            Game.appendToLeftTextArea("Player " + p2.getPlayerNr() + " won!\nPlayer " + p1.getPlayerNr() + " will take " + damage + " damage");
+            if (Game.logPlayersActions) Game.appendToLeftTextArea("Player " + p2.getPlayerNr() + " won!\nPlayer " + p1.getPlayerNr() + " will take " + damage + " damage");
 
         } else {
             p1.setSecondToLastDamageTaken(p1.getLastDamageTaken());
             p1.setLastDamageTaken(0);
             p2.setSecondToLastDamageTaken(p2.getLastDamageTaken());
             p2.setLastDamageTaken(0);
-            Game.appendToLeftTextArea("It's a draw!");
+            if (Game.logPlayersActions) Game.appendToLeftTextArea("It's a draw!");
         }
 
         //adding dead players to deathsLastTurn
@@ -459,7 +459,7 @@ public class Battler {
                 }
             }
 
-            Game.appendToLeftTextArea(attacker.toString() + "  attacks  " + target.toString() + "\n");
+            if (Game.logPlayersActions) Game.appendToLeftTextArea(attacker.toString() + "  attacks  " + target.toString() + "\n");
 
             //execute attack (saves necessary cause one might die and lose its atk aura buff)
             int targetAtk   = target.getAttack();
@@ -487,7 +487,7 @@ public class Battler {
     }
 
     public static void killMinion(AuraBoard minionsAuraBoard, Minion minion, AuraBoard opposingAuraBoard, Minion killer) {
-        Game.appendToLeftTextArea(minion.toString() + " died\n");
+        if (Game.logPlayersActions) Game.appendToLeftTextArea(minion.toString() + " died\n");
         boolean wasp1na = false;
         boolean wasp2na = false;
         if (minion == p1nextAttacker) {
@@ -511,7 +511,7 @@ public class Battler {
                     for (int j = 0; j < oneceOrTwice; j++) {
                         Minion luckyOne = minionsAuraBoard.getBoardMinion(new Random().nextInt(minionsAuraBoard.getBoardSize()));
                         luckyOne.addAttack(minion.getAttack() + atkBuff);
-                        Game.appendToLeftTextArea("Fiendish Servant's deathrattle gave " + (minion.getAttack() + atkBuff) + " attack to " + luckyOne.getName() + "\n");
+                        if (Game.logPlayersActions) Game.appendToLeftTextArea("Fiendish Servant's deathrattle gave " + (minion.getAttack() + atkBuff) + " attack to " + luckyOne.getName() + "\n");
                     }
                 }
             }
@@ -530,7 +530,7 @@ public class Battler {
                 summonMinion(minionsAuraBoard, joEBot, savePos);
                 if (wasp1na || minion == p1activeAttacker) setP1nextAttacker(joEBot);
                 if (wasp2na || minion == p2activeAttacker) setP2nextAttacker(joEBot);
-                Game.appendToLeftTextArea("Mecharoo's deathrattle summoned " + joEBot.toString() + "\n");
+                if (Game.logPlayersActions) Game.appendToLeftTextArea("Mecharoo's deathrattle summoned " + joEBot.toString() + "\n");
             }
         }
 
@@ -548,7 +548,7 @@ public class Battler {
                         Collections.shuffle(noDivineShielders);
                         Minion luckyOne = noDivineShielders.getFirst();
                         luckyOne.setDivineShield(true);
-                        Game.appendToLeftTextArea("Selfless Hero's deathrattle gave " + luckyOne.getName() + " Divine Shield\n");
+                        if (Game.logPlayersActions) Game.appendToLeftTextArea("Selfless Hero's deathrattle gave " + luckyOne.getName() + " Divine Shield\n");
                     }
                 }
             }
@@ -567,7 +567,7 @@ public class Battler {
                 summonMinion(minionsAuraBoard, damagedGolem, savePos);
                 if (wasp1na || minion == p1activeAttacker) setP1nextAttacker(damagedGolem);
                 if (wasp2na || minion == p2activeAttacker) setP2nextAttacker(damagedGolem);
-                Game.appendToLeftTextArea("Harvest Golem's deathrattle summoned " + damagedGolem.toString() + "\n");
+                if (Game.logPlayersActions) Game.appendToLeftTextArea("Harvest Golem's deathrattle summoned " + damagedGolem.toString() + "\n");
             }
         }
 
@@ -584,7 +584,7 @@ public class Battler {
                 summonMinion(minionsAuraBoard, imp, savePos);
                 if (wasp1na || minion == p1activeAttacker) setP1nextAttacker(imp);
                 if (wasp2na || minion == p2activeAttacker) setP2nextAttacker(imp);
-                Game.appendToLeftTextArea("Imprisoner's deathrattle summoned " + imp.toString() + "\n");
+                if (Game.logPlayersActions) Game.appendToLeftTextArea("Imprisoner's deathrattle summoned " + imp.toString() + "\n");
             }
         }
 
@@ -601,7 +601,7 @@ public class Battler {
                 summonMinion(minionsAuraBoard, bigBadWolf, savePos);
                 if (wasp1na || minion == p1activeAttacker) setP1nextAttacker(bigBadWolf);
                 if (wasp2na || minion == p2activeAttacker) setP2nextAttacker(bigBadWolf);
-                Game.appendToLeftTextArea("Kindly Grandmother's deathrattle summoned " + bigBadWolf.toString() + "\n");
+                if (Game.logPlayersActions) Game.appendToLeftTextArea("Kindly Grandmother's deathrattle summoned " + bigBadWolf.toString() + "\n");
             }
         }
 
@@ -620,7 +620,7 @@ public class Battler {
                         summonMinion(minionsAuraBoard, rat, savePos);
                         if (wasp1na || minion == p1activeAttacker) setP1nextAttacker(rat);
                         if (wasp2na || minion == p2activeAttacker) setP2nextAttacker(rat);
-                        Game.appendToLeftTextArea("Rat Pack's deathrattle summoned " + rat.toString() + "\n");
+                        if (Game.logPlayersActions) Game.appendToLeftTextArea("Rat Pack's deathrattle summoned " + rat.toString() + "\n");
                     }
                 }
             }
@@ -697,7 +697,7 @@ public class Battler {
                         summonMinion(minionsAuraBoard, spuder, savePos);
                         if (wasp1na || minion == p1activeAttacker) setP1nextAttacker(spuder);
                         if (wasp2na || minion == p2activeAttacker) setP2nextAttacker(spuder);
-                        Game.appendToLeftTextArea("Infested Wolf's deathrattle summoned " + spuder.toString() + "\n");
+                        if (Game.logPlayersActions) Game.appendToLeftTextArea("Infested Wolf's deathrattle summoned " + spuder.toString() + "\n");
                     }
                 }
             }
@@ -714,7 +714,7 @@ public class Battler {
                         summonMinion(minionsAuraBoard, rndTwoCost, savePos);
                         if (wasp1na || minion == p1activeAttacker) setP1nextAttacker(rndTwoCost);
                         if (wasp2na || minion == p2activeAttacker) setP2nextAttacker(rndTwoCost);
-                        Game.appendToLeftTextArea("Piloted Shredder's deathrattle summoned " + rndTwoCost.toString() + "\n");
+                        if (Game.logPlayersActions) Game.appendToLeftTextArea("Piloted Shredder's deathrattle summoned " + rndTwoCost.toString() + "\n");
                     }
                 }
             }
@@ -735,7 +735,7 @@ public class Battler {
                         summonMinion(minionsAuraBoard, microbot, savePos);
                         if (wasp1na || minion == p1activeAttacker) setP1nextAttacker(microbot);
                         if (wasp2na || minion == p2activeAttacker) setP2nextAttacker(microbot);
-                        Game.appendToLeftTextArea("Replicating Menace's deathrattle summoned " + microbot.toString() + "\n");
+                        if (Game.logPlayersActions) Game.appendToLeftTextArea("Replicating Menace's deathrattle summoned " + microbot.toString() + "\n");
                     }
                 }
             }
@@ -752,7 +752,7 @@ public class Battler {
                     }
                     summonMinion(opposingAuraBoard, finkleEinhorn, opposingAuraBoard.getBoardSize());
                     //TODO might affect opposing attack order
-                    Game.appendToLeftTextArea("The Beast's deathrattle summoned " + finkleEinhorn.toString() + " for his opponent\n");
+                    if (Game.logPlayersActions) Game.appendToLeftTextArea("The Beast's deathrattle summoned " + finkleEinhorn.toString() + " for his opponent\n");
                 }
             }
         }
@@ -770,7 +770,7 @@ public class Battler {
                 summonMinion(minionsAuraBoard, robosaur, savePos);
                 if (wasp1na || minion == p1activeAttacker) setP1nextAttacker(robosaur);
                 if (wasp2na || minion == p2activeAttacker) setP2nextAttacker(robosaur);
-                Game.appendToLeftTextArea("Mechano Egg's deathrattle summoned " + robosaur.toString() + "\n");
+                if (Game.logPlayersActions) Game.appendToLeftTextArea("Mechano Egg's deathrattle summoned " + robosaur.toString() + "\n");
             }
         }
 
@@ -789,7 +789,7 @@ public class Battler {
                         summonMinion(minionsAuraBoard, hyena, savePos);
                         if (wasp1na || minion == p1activeAttacker) setP1nextAttacker(hyena);
                         if (wasp2na || minion == p2activeAttacker) setP2nextAttacker(hyena);
-                        Game.appendToLeftTextArea("Savannah Highmane's deathrattle summoned " + hyena.toString() + "\n");
+                        if (Game.logPlayersActions) Game.appendToLeftTextArea("Savannah Highmane's deathrattle summoned " + hyena.toString() + "\n");
                     }
                 }
             }
@@ -840,7 +840,7 @@ public class Battler {
                         summonMinion(minionsAuraBoard, rndLegendary, savePos);
                         if (wasp1na || minion == p1activeAttacker) setP1nextAttacker(rndLegendary);
                         if (wasp2na || minion == p2activeAttacker) setP2nextAttacker(rndLegendary);
-                        Game.appendToLeftTextArea("Sneed's Old Shredder's deathrattle summoned " + rndLegendary.toString() + "\n");
+                        if (Game.logPlayersActions) Game.appendToLeftTextArea("Sneed's Old Shredder's deathrattle summoned " + rndLegendary.toString() + "\n");
                     }
                 }
             }
@@ -861,7 +861,7 @@ public class Battler {
                         summonMinion(minionsAuraBoard, voidwalker, savePos);
                         if (wasp1na || minion == p1activeAttacker) setP1nextAttacker(voidwalker);
                         if (wasp2na || minion == p2activeAttacker) setP2nextAttacker(voidwalker);
-                        Game.appendToLeftTextArea("Voidlord's deathrattle summoned " + voidwalker.toString() + "\n");
+                        if (Game.logPlayersActions) Game.appendToLeftTextArea("Voidlord's deathrattle summoned " + voidwalker.toString() + "\n");
                     }
                 }
             }
@@ -878,7 +878,7 @@ public class Battler {
                         summonMinion(minionsAuraBoard, rndDeathrattleMinion, savePos);
                         if (wasp1na || minion == p1activeAttacker) setP1nextAttacker(rndDeathrattleMinion);
                         if (wasp2na || minion == p2activeAttacker) setP2nextAttacker(rndDeathrattleMinion);
-                        Game.appendToLeftTextArea("Ghastcoiler's deathrattle summoned " + rndDeathrattleMinion.toString() + "\n");
+                        if (Game.logPlayersActions) Game.appendToLeftTextArea("Ghastcoiler's deathrattle summoned " + rndDeathrattleMinion.toString() + "\n");
                     }
                 }
             }
@@ -908,7 +908,7 @@ public class Battler {
             minionsAuraBoard.playMinion(ressurrectedMinion, savePos, -1);           //explicitly not a summon
             if (wasp1na || minion == p1activeAttacker) setP1nextAttacker(ressurrectedMinion);
             if (wasp2na || minion == p2activeAttacker) setP2nextAttacker(ressurrectedMinion);
-            Game.appendToLeftTextArea(minion.getName() + " resurrected\n");
+            if (Game.logPlayersActions) Game.appendToLeftTextArea(minion.getName() + " resurrected\n");
         }
 
     }

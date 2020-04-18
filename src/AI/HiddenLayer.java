@@ -72,10 +72,8 @@ public class HiddenLayer implements Layer {
         nodesOutputs = new double[inputs.length];
 
         for (int i = 0; i < inputs.length; i++) {
-            inputs[i] += biases[i];
-            z[i] = inputs[i];
-            inputs[i] = Math.max(inputs[i], 0);
-            nodesOutputs[i] = inputs[i];
+            z[i] = inputs[i] + biases[i];
+            nodesOutputs[i] = Math.max(z[i], 0);
         }
 
         nextLayer.forwardPropagate(MathHelper.multiply(weightsOfOutgoingConnections, nodesOutputs));
@@ -137,16 +135,16 @@ public class HiddenLayer implements Layer {
     }
 
     @Override
-    public void updateWeightsAndBiases(double learningRate) {
+    public void updateWeightsAndBiases(double learningRate, int miniBatchSize) {
         for (int i = 0; i < biases.length; i++) {
             biases[i] -= learningRate * biasesGradients[i];
         }
         for (int i = 0; i < weightsOfOutgoingConnections.length; i++) {
             for (int j = 0; j < weightsOfOutgoingConnections[0].length; j++) {
-                weightsOfOutgoingConnections[i][j] -= learningRate * outgoingConnectionsWeightsGradients[i][j];
+                weightsOfOutgoingConnections[i][j] -= learningRate * outgoingConnectionsWeightsGradients[i][j] / miniBatchSize;
             }
         }
-        nextLayer.updateWeightsAndBiases(learningRate);
+        nextLayer.updateWeightsAndBiases(learningRate, miniBatchSize);
     }
 
     @Override
@@ -211,5 +209,26 @@ public class HiddenLayer implements Layer {
                 this.outgoingConnectionsWeightsGradients[i][j] += outgoingConnectionsWeightsGradients[i][j];
             }
         }
+    }
+
+    @Override
+    public String weightsAndBiasesAsString(String prefix) {
+        String built = prefix + "\nHidden Layer:\nBiases: (" + biases.length + ")\n";
+
+        for (int j = 0; j < biases.length; j++) {
+            built += "[" + this.biases[j] + "]\n";
+        }
+
+        built += "\nWeights: (from: " + weightsOfOutgoingConnections[0].length + " to: " + weightsOfOutgoingConnections.length + ")\n";
+
+        for (int i = 0; i < weightsOfOutgoingConnections.length; i++) {
+            built += "[";
+            for (int j = 0; j < weightsOfOutgoingConnections[0].length; j++) {
+                built += this.weightsOfOutgoingConnections[i][j] + ", ";
+            }
+            built += "]\n";
+        }
+
+        return nextLayer.weightsAndBiasesAsString(built);
     }
 }

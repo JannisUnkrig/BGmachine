@@ -100,6 +100,7 @@ public class Game {
                     if(command.equals("restart")) {
                         startGame();
                         textAreaR.append("\nrestarted game\n");
+                        updateDisplayedPlayer();
                         return;
                     }
 
@@ -180,6 +181,13 @@ public class Game {
                         return;
                     }
 
+                    if(command.startsWith("aiv1learningrate ") && command.length() >= 18 && Character.isDigit(command.charAt(17))) {
+                        double nr = Double.parseDouble(command.substring(17));
+                        AgentV1.setLearningRate(nr);
+                        textAreaR.append("\nA.I.V1 set its learning rate to " + nr + "\n");
+                        return;
+                    }
+
                     if(command.startsWith("aiv1train ")) {
                         String[] splitted = command.split(" ");
                         int n1 = Integer.parseInt(splitted[1]);
@@ -187,6 +195,12 @@ public class Game {
                         int n3 = Integer.parseInt(splitted[3]);
                         trainAgentV1(n1, n2, n3);
                         textAreaR.append("\nA.I.V1 trained " + n1 + " times with " + n2 + " turns and " + n3 + " improvements per session\n");
+                        return;
+                    }
+
+                    if(command.equals("aiv1print")) {
+                        textAreaR.append(AgentV1.getBrainAsString());
+                        textAreaR.append("\nCurrent weights and biases of A.I.V1 are displayed\n");
                         return;
                     }
 
@@ -288,6 +302,7 @@ public class Game {
         f.getContentPane().add(BorderLayout.WEST, scrollbar2);
 
         startGame();
+        updateDisplayedPlayer();
 
         /*
         final JButton button = new JButton("Click Me");
@@ -317,7 +332,6 @@ public class Game {
         Battler.calcCurrentRanking(players);
         Battler.generateMatchups(players);
 
-        updateDisplayedPlayer();
         running = true;
     }
 
@@ -396,8 +410,9 @@ public class Game {
                         agent.setEndStateOfCurSARS(0);
 
                         int newHealth = agent.getAgentPlaysAs().getHealth();
-                        int reward = (newHealth - oldHealth) * 700;
-                        agent.addToRewardOfCurSARS(reward);
+                        int reward = (oldHealth - newHealth) * -7;
+                        //TODO reactivate
+                        //agent.addToRewardOfCurSARS(reward);
                         agent.saveCurSARStoERS();
                     }
                 }
@@ -419,8 +434,8 @@ public class Game {
 
             agent.setEndStateOfCurSARS(1);
 
-            int reward = player.getLastDamageTaken() * -700;
-            reward += player.getLastOpponent().getLastDamageTaken() * 100;
+            int reward = player.getLastDamageTaken() * -7;
+            reward += player.getLastOpponent().getLastDamageTaken() * 1;
             agent.addToRewardOfCurSARS(reward);
 
             agent.saveCurSARStoERS();
@@ -445,7 +460,8 @@ public class Game {
         for (int i = 0; i < sessions; i++) {
             agentV1PlaysRounds(turns);
             AgentV1.improve(improvements);
-            System.out.println("Session " + (i+1) + " done");
+            double avgError = AgentV1.getErrorAccumulatorForOneImproveSession() / improvements / AgentV1.getMiniBatchSize();
+            System.out.println("Session " + (i+1) + " done. Average error of this session: " + avgError);
         }
 
         logPlayersActions = save;

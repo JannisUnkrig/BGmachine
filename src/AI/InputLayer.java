@@ -79,13 +79,13 @@ public class InputLayer implements Layer {
     }
 
     @Override
-    public void updateWeightsAndBiases(double learningRate) {
+    public void updateWeightsAndBiases(double learningRate, int miniBatchSize) {
         for (int i = 0; i < weightsOfOutgoingConnections.length; i++) {
             for (int j = 0; j < weightsOfOutgoingConnections[0].length; j++) {
-                weightsOfOutgoingConnections[i][j] -= learningRate * outgoingConnectionsWeightsGradients[i][j];
+                weightsOfOutgoingConnections[i][j] -= learningRate * outgoingConnectionsWeightsGradients[i][j] / miniBatchSize;
             }
         }
-        nextLayer.updateWeightsAndBiases(learningRate);
+        nextLayer.updateWeightsAndBiases(learningRate, miniBatchSize);
     }
 
     @Override
@@ -145,5 +145,20 @@ public class InputLayer implements Layer {
                 this.outgoingConnectionsWeightsGradients[i][j] += outgoingConnectionsWeightsGradients[i][j];
             }
         }
+    }
+
+    @Override
+    public String weightsAndBiasesAsString(String prefix) {
+        String built = "\nInput Layer:\nWeights: (from: " + weightsOfOutgoingConnections[0].length + " to: " + weightsOfOutgoingConnections.length + ")\n";
+
+        for (int i = 0; i < weightsOfOutgoingConnections.length; i++) {
+            built += "[";
+            for (int j = 0; j < weightsOfOutgoingConnections[0].length; j++) {
+                built += this.weightsOfOutgoingConnections[i][j] + ", ";
+            }
+            built += "]\n";
+        }
+
+        return nextLayer.weightsAndBiasesAsString(built);
     }
 }

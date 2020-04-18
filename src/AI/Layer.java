@@ -28,7 +28,9 @@ public interface Layer {
 
     void backPropagate();
 
-    void updateWeightsAndBiases(double learningRate);
+    void updateWeightsAndBiases(double learningRate, int miniBatchSize);
 
     void resetGradients();
+
+    String weightsAndBiasesAsString(String prefix);
 }

@@ -7,7 +7,6 @@ import TrainingFacility.Player;
 
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.Random;
 
 /** plays turn one.
  * inputs: gold, shop minion 1-3, hand minion 1, board minion 1-2
@@ -17,17 +16,17 @@ import java.util.Random;
 public class AgentV1 {
 
     private static double epsilon = 0.5;                                //how often the nn chooses randomly (0 = no randomness, 1 = absolut randomness)
+    private static double learningRate = 0.01;                          //aka alpha
     private static final int ERSSize = 10000;
-    private static final double unusualSampleFactor = 0.25;             //how much samples with very high/low rewards are prefered in learning phase (0 = 100% bias for highest reward, 1 no biasing)
+    private static final double unusualSampleFactor = 0.1;             //how much samples with very high/low rewards are prefered in learning phase (0.0000001 = ~100% bias for highest reward, 1 no biasing)
     private static final int miniBatchSize = 10;
     private static final int numberOfImprovementsUntilTargetNetworkGetsUpdated = 20;
     private static int targetUpdateCounter = 0;
-    private static double learningRate = 0.01;                          //aka alpha
-    private static final double discountFactor = 0.99;                   //aka gamma; how much the predicted future value gets factored in. 0 = completly, 1 = not at all
+    private static final double discountFactor = 0.99;                   //aka gamma; how much the predicted future value gets factored in. 1 = completly, 0 = not at all
 
     //update calcCurState and makeAMove when adjusting the following constants
     private static final int inputNodes = 7;
-    private static final int[] hiddenLayersNodes = new int[] {8};
+    private static final int[] hiddenLayersNodes = new int[] {8, 9};
     private static final int outputNodes = 9;
 
 
@@ -36,6 +35,7 @@ public class AgentV1 {
     private static int[][] experienceReplayStorage = new int[ERSSize][];
     private static int howFullIsERS = 0;
     private static int nextERSIndex = 0;
+    private static double errorAccumulatorForOneImproveSession = 0;                          //just for monitoring
 
 
     private static void addToERS(int[] sars) {
@@ -58,9 +58,11 @@ public class AgentV1 {
             return -1;
         });
 
+        errorAccumulatorForOneImproveSession = 0;
+
         for (int j = 0; j < howOften; j++) {
             for (int i = 0; i < miniBatchSize; i++) {
-                //TODO actually bias the sorted ERS
+                //bias the sorted ERS
                 double d = Math.random();
                 d = Math.pow(d, 1/unusualSampleFactor);
                 int idx = (int) (d * sortedERS.length);
@@ -109,7 +111,7 @@ public class AgentV1 {
             }
 
             //update collectiveBrain
-            collectiveBrain.updateWeightsAndBiases(learningRate);
+            collectiveBrain.updateWeightsAndBiases(learningRate, miniBatchSize);
 
             //reset gradient tracker
             collectiveBrain.resetGradients();
@@ -130,6 +132,34 @@ public class AgentV1 {
         return epsilon;
     }
 
+    public static double getLearningRate() {
+        return learningRate;
+    }
+
+    public static void setLearningRate(double learningRate) {
+        AgentV1.learningRate = learningRate;
+    }
+
+    public static String getBrainAsString() {
+        return collectiveBrain.weightsAndBiasesAsString();
+    }
+
+    public static void addToErrorAccumulatorForOneImproveSession(double howMuch) {
+        errorAccumulatorForOneImproveSession += howMuch;
+    }
+
+    public static void setErrorAccumulatorForOneImproveSession(double to) {
+        errorAccumulatorForOneImproveSession = to;
+    }
+
+    public static double getErrorAccumulatorForOneImproveSession() {
+        return errorAccumulatorForOneImproveSession;
+    }
+
+    public static double getMiniBatchSize() {
+        return miniBatchSize;
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////
 
     private Player agentPlaysAs;
@@ -148,36 +178,39 @@ public class AgentV1 {
 
         double[] outputs = collectiveBrain.calcOutputs(curState);
 
-        int indexOfChoosenAction = 1234;
+        int indexOfChosenAction = 1234;
+        boolean rng = false;
 
         if (Math.random() >= epsilon) {
             double biggest = 1234;
             for (int i = 0; i < outputs.length; i++) {
                 if (i== 0 || outputs[i] > biggest) {
-                    indexOfChoosenAction = i;
+                    indexOfChosenAction = i;
                     biggest = outputs[i];
                 }
             }
 
         } else {
-            indexOfChoosenAction = (int) (Math.random() * ((double) outputNodes));
+            indexOfChosenAction = (int) (Math.random() * ((double) outputNodes));
+            rng = true;
         }
 
 
         boolean legal = false;
-        if      (indexOfChoosenAction == 0) legal = agentPlaysAs.roll();
-        else if (indexOfChoosenAction == 1) legal = agentPlaysAs.freeze();
-        else if (indexOfChoosenAction == 2) legal = agentPlaysAs.buy(0);
-        else if (indexOfChoosenAction == 3) legal = agentPlaysAs.buy(1);
-        else if (indexOfChoosenAction == 4) legal = agentPlaysAs.buy(2);
-        else if (indexOfChoosenAction == 5) legal = agentPlaysAs.sell(0);
-        else if (indexOfChoosenAction == 6) legal = agentPlaysAs.sell(1);
-        else if (indexOfChoosenAction == 7) legal = agentPlaysAs.play(0, 0, -1);
-        else if (indexOfChoosenAction == 8) {
+        if      (indexOfChosenAction == 0) legal = agentPlaysAs.roll();
+        else if (indexOfChosenAction == 1) legal = agentPlaysAs.freeze();
+        else if (indexOfChosenAction == 2) legal = agentPlaysAs.buy(0);
+        else if (indexOfChosenAction == 3) legal = agentPlaysAs.buy(1);
+        else if (indexOfChosenAction == 4) legal = agentPlaysAs.buy(2);
+        else if (indexOfChosenAction == 5) legal = agentPlaysAs.sell(0);
+        else if (indexOfChosenAction == 6) legal = agentPlaysAs.sell(1);
+        else if (indexOfChosenAction == 7) legal = agentPlaysAs.play(0, 0, -1);
+        else if (indexOfChosenAction == 8) {
             legal = true;
             done = true;
             if (Game.logPlayersActions) Game.appendToRightTextArea("\nPlayer " + agentPlaysAs.getPlayerNr() + " decided he's done with his turn (successful)");
         }
+        if (Game.logPlayersActions && rng) Game.appendToRightTextArea(" (randomly)");
 
 
         int[] newSARS = new int[inputNodes+1+1+inputNodes+1];
@@ -186,11 +219,12 @@ public class AgentV1 {
         System.arraycopy(curState, 0, newSARS, 0, inputNodes);
 
         //action
-        newSARS[inputNodes] = indexOfChoosenAction;
+        newSARS[inputNodes] = indexOfChosenAction;
 
         //rewards further modified later
-        if (!legal)                     newSARS[inputNodes + 1] = -3;
-        if (indexOfChoosenAction == 1)  newSARS[inputNodes + 1] = -1;
+        if (!legal)                     newSARS[inputNodes + 1] = 0;        //try to stop illegal moves
+        if (indexOfChosenAction == 1)  newSARS[inputNodes + 1] = 0;         //try to stop ai from freezing over and over
+        if (indexOfChosenAction != 8)  newSARS[inputNodes + 1] = -1;        //try to stop ai from never ending turn
 
         //new state
         curState = calcCurState();

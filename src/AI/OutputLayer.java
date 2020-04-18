@@ -67,6 +67,8 @@ public class OutputLayer implements Layer {
     public void backPropagate(int chosenAction, double targetForChosenAction) {
         double predictionForChosenAction = nodesOutputs[chosenAction];
 
+        AgentV1.addToErrorAccumulatorForOneImproveSession(Math.abs(predictionForChosenAction - targetForChosenAction));
+
         //biasGradients
         if(biasesGradients == null) biasesGradients = new double[nodesOutputs.length];
         //no gradient for the predictions for all non-chosen actions can be calculated
@@ -114,9 +116,9 @@ public class OutputLayer implements Layer {
     }
 
     @Override
-    public void updateWeightsAndBiases(double learningRate) {
+    public void updateWeightsAndBiases(double learningRate, int miniBatchSize) {
         for (int i = 0; i < biases.length; i++) {
-            biases[i] -= learningRate * biasesGradients[i];
+            biases[i] -= learningRate * biasesGradients[i] / miniBatchSize;
         }
     }
 
@@ -169,4 +171,15 @@ public class OutputLayer implements Layer {
     @Override
     //useless
     public void addOutgoingConnectionsWeightsGradients(double[][] outgoingConnectionsWeightsGradients) { }
+
+    @Override
+    public String weightsAndBiasesAsString(String prefix) {
+        String built = prefix + "\nOutput Layer:\nBiases: (" + biases.length + ")\n";
+
+        for (int j = 0; j < biases.length; j++) {
+            built += "[" + this.biases[j] + "]\n";
+        }
+
+        return built;
+    }
 }

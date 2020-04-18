@@ -50,7 +50,7 @@ public class NeuralNet {
 
     /**==calcOutputs but the outputs for each node is saved as they're needed for backpropagation*/
     public void forwardPropagate(int[] inputs) {
-        inputLayer.forwardPropagate(inputs);        //TODO this should store z
+        inputLayer.forwardPropagate(inputs);
     }
 
     /**backpropagate through the net and store the calculated gradient of each weight/bias/nodeOutput in its Layer class*/
@@ -58,11 +58,15 @@ public class NeuralNet {
         outputLayer.backPropagate(chosenAction, targetForChosenAction);
     }
 
-    public void updateWeightsAndBiases(double learningRate)  {
-        inputLayer.updateWeightsAndBiases(learningRate);
+    public void updateWeightsAndBiases(double learningRate, int miniBatchSize)  {
+        inputLayer.updateWeightsAndBiases(learningRate, miniBatchSize);
     }
 
     public void resetGradients() {
         inputLayer.resetGradients();
+    }
+
+    public String weightsAndBiasesAsString() {
+        return inputLayer.weightsAndBiasesAsString("dummy");
     }
 }

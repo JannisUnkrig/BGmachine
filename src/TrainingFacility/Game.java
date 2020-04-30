@@ -32,7 +32,7 @@ public class Game {
         //console
         textAreaR.addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent evt) {
-                if(evt.getKeyCode() == KeyEvent.VK_ENTER) {
+                if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
                     //get last line
                     int end = textAreaR.getDocument().getLength();
                     int start = 0;
@@ -52,7 +52,7 @@ public class Game {
                     command = command.toLowerCase();
 
                     //control commands
-                    if(command.equals("hjelp")) {
+                    if (command.equals("hjelp")) {
                         textAreaR.append("\nHjelp:\n\n" +
                                 "Control commands:\n" +
                                 "player x:\tChoose as which player you play. x = player number (1-8)\n" +
@@ -81,9 +81,9 @@ public class Game {
                         return;
                     }
 
-                    if(command.startsWith("player ") && command.length() == 8 && command.charAt(6) == ' ' && Character.isDigit(command.charAt(7))) {
+                    if (command.startsWith("player ") && command.length() == 8 && command.charAt(6) == ' ' && Character.isDigit(command.charAt(7))) {
                         int nr = Integer.parseInt(command.substring(7));
-                        if(nr >= 1 && nr <= 8) {
+                        if (nr >= 1 && nr <= 8) {
                             displayedPlayer = players[nr - 1];
                             updateDisplayedPlayer();
                             textAreaR.append("\nacting as player" + displayedPlayer.getPlayerNr() + "\n");
@@ -91,39 +91,39 @@ public class Game {
                         }
                     }
 
-                    if(command.equals("timeup")) {
+                    if (command.equals("timeup")) {
                         battleAndStartNextTurn();
                         textAreaR.append("\neveryone battled and a new turn started\n");
                         return;
                     }
 
-                    if(command.equals("restart")) {
+                    if (command.equals("restart")) {
                         startGame();
                         textAreaR.append("\nrestarted game\n");
                         updateDisplayedPlayer();
                         return;
                     }
 
-                    if(command.equals("nextturn")) {
+                    if (command.equals("nextturn")) {
                         startNextTurn();
                         textAreaR.append("\nstarted next turn\n");
                         return;
                     }
 
-                    if(command.startsWith("battle ") && command.length() == 8 && Character.isDigit(command.charAt(7))) {
+                    if (command.startsWith("battle ") && command.length() == 8 && Character.isDigit(command.charAt(7))) {
                         int nr = Integer.parseInt(command.substring(7));
                         Battler.battle(displayedPlayer, players[nr - 1]);
                         textAreaR.append("\nbattled player " + nr + "\n");
                         return;
                     }
 
-                    if(command.equals("battleall")) {
+                    if (command.equals("battleall")) {
                         Battler.battleAll(players);
                         textAreaR.append("\neveryone battled someone\n");
                         return;
                     }
 
-                    if(command.startsWith("get ")) {
+                    if (command.startsWith("get ")) {
                         String name = command.substring(4);
                         Minion m;
                         try {
@@ -137,7 +137,7 @@ public class Game {
                         return;
                     }
 
-                    if(command.startsWith("log ")) {
+                    if (command.startsWith("log ")) {
                         boolean b = Boolean.parseBoolean(command.substring(4));
                         logPlayersActions = b;
                         textAreaR.append("\nlog player actions: " + b + "\n");
@@ -146,49 +146,49 @@ public class Game {
 
 
                     //A.I.commands
-                    if(command.equals("aiv1move")) {
+                    if (command.equals("aiv1move")) {
                         agentV1PlaysMove(displayedPlayer);
                         updateDisplayedPlayer();
                         textAreaR.append(" (Player " + displayedPlayer.getPlayerNr() + "'s A.I. agent played this move)\n");
                         return;
                     }
 
-                    if(command.equals("aiv1turn")) {
+                    if (command.equals("aiv1turn")) {
                         agentV1PlaysRound();
                         updateDisplayedPlayer();
                         textAreaR.append("\nA complete turn was played by the A.I.\n");
                         return;
                     }
 
-                    if(command.startsWith("aiv1turns ") && command.length() >= 11 && Character.isDigit(command.charAt(10))) {
+                    if (command.startsWith("aiv1turns ") && command.length() >= 11 && Character.isDigit(command.charAt(10))) {
                         int nr = Integer.parseInt(command.substring(10));
                         agentV1PlaysRounds(nr);
                         textAreaR.append("\n" + nr + " complete turn ones were played by the A.I.\n");
                         return;
                     }
 
-                    if(command.startsWith("aiv1improve ") && command.length() >= 13 && Character.isDigit(command.charAt(12))) {
+                    if (command.startsWith("aiv1improve ") && command.length() >= 13 && Character.isDigit(command.charAt(12))) {
                         int nr = Integer.parseInt(command.substring(12));
                         AgentV1.improve(nr);
                         textAreaR.append("\nA.I.V1 improved itself " + nr + " times\n");
                         return;
                     }
 
-                    if(command.startsWith("aiv1epsilon ") && command.length() >= 13 && Character.isDigit(command.charAt(12))) {
+                    if (command.startsWith("aiv1epsilon ") && command.length() >= 13 && Character.isDigit(command.charAt(12))) {
                         double nr = Double.parseDouble(command.substring(12));
                         AgentV1.setEpsilon(nr);
                         textAreaR.append("\nA.I.V1 set its epsilon to " + nr + "\n");
                         return;
                     }
 
-                    if(command.startsWith("aiv1learningrate ") && command.length() >= 18 && Character.isDigit(command.charAt(17))) {
+                    if (command.startsWith("aiv1learningrate ") && command.length() >= 18 && Character.isDigit(command.charAt(17))) {
                         double nr = Double.parseDouble(command.substring(17));
                         AgentV1.setLearningRate(nr);
                         textAreaR.append("\nA.I.V1 set its learning rate to " + nr + "\n");
                         return;
                     }
 
-                    if(command.startsWith("aiv1train ")) {
+                    if (command.startsWith("aiv1train ")) {
                         String[] splitted = command.split(" ");
                         int n1 = Integer.parseInt(splitted[1]);
                         int n2 = Integer.parseInt(splitted[2]);
@@ -198,7 +198,7 @@ public class Game {
                         return;
                     }
 
-                    if(command.equals("aiv1print")) {
+                    if (command.equals("aiv1print")) {
                         textAreaR.append(AgentV1.getBrainAsString());
                         textAreaR.append("\nCurrent weights and biases of A.I.V1 are displayed\n");
                         return;
@@ -206,28 +206,28 @@ public class Game {
 
 
                     //player action commands
-                    if(command.equals("level")) {
+                    if (command.equals("level")) {
                         displayedPlayer.level();
                         updateDisplayedPlayer();
                         textAreaR.append("\n");
                         return;
                     }
 
-                    if(command.equals("roll")) {
+                    if (command.equals("roll")) {
                         displayedPlayer.roll();
                         updateDisplayedPlayer();
                         textAreaR.append("\n");
                         return;
                     }
 
-                    if(command.equals("freeze")) {
+                    if (command.equals("freeze")) {
                         displayedPlayer.freeze();
                         updateDisplayedPlayer();
                         textAreaR.append("\n");
                         return;
                     }
 
-                    if(command.startsWith("buy ") && command.length() == 5 && Character.isDigit(command.charAt(4))) {
+                    if (command.startsWith("buy ") && command.length() == 5 && Character.isDigit(command.charAt(4))) {
                         int nr = Integer.parseInt(command.substring(4));
                         displayedPlayer.buy(nr);
                         updateDisplayedPlayer();
@@ -235,7 +235,7 @@ public class Game {
                         return;
                     }
 
-                    if(command.startsWith("sell ") && command.length() == 6 && Character.isDigit(command.charAt(5))) {
+                    if (command.startsWith("sell ") && command.length() == 6 && Character.isDigit(command.charAt(5))) {
                         int nr = Integer.parseInt(command.substring(5));
                         displayedPlayer.sell(nr);
                         updateDisplayedPlayer();
@@ -243,7 +243,7 @@ public class Game {
                         return;
                     }
 
-                    if(command.startsWith("move ") && command.length() == 8 && Character.isDigit(command.charAt(5)) && command.charAt(6) == ' ' && Character.isDigit(command.charAt(7))) {
+                    if (command.startsWith("move ") && command.length() == 8 && Character.isDigit(command.charAt(5)) && command.charAt(6) == ' ' && Character.isDigit(command.charAt(7))) {
                         int nr1 = Integer.parseInt(command.substring(5, 6));
                         int nr2 = Integer.parseInt(command.substring(7));
                         displayedPlayer.move(nr1, nr2);
@@ -281,7 +281,7 @@ public class Game {
                         }
                     }
 
-                    if(command.startsWith("choose ") && command.length() == 8 && Character.isDigit(command.charAt(7))) {
+                    if (command.startsWith("choose ") && command.length() == 8 && Character.isDigit(command.charAt(7))) {
                         int nr = Integer.parseInt(command.substring(7));
                         displayedPlayer.choose(nr);
                         updateDisplayedPlayer();
@@ -311,7 +311,6 @@ public class Game {
         */
         f.setVisible(true);
     }
-
 
 
     private static void startGame() {
@@ -442,6 +441,7 @@ public class Game {
         }
     }
 
+
     private static void agentV1PlaysRounds(int howMany) {
         if (howMany < 1) {
             Game.appendToRightTextArea("\nmodifier must be > 0\n");
@@ -452,6 +452,7 @@ public class Game {
             startGame();
         }
     }
+
 
     public static void trainAgentV1(int sessions, int turns, int improvements) {
         boolean save = logPlayersActions;

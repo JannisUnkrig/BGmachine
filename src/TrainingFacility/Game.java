@@ -380,6 +380,7 @@ public class Game {
         }
     }
 
+    //probably never wants to end its move as ai thinks this is the first move played this turn
     private static void agentV1PlaysMove(Player player) {
         int index = -1;
         for (int i = 0; i < players.length; i++) {
@@ -388,7 +389,7 @@ public class Game {
                 break;
             }
         }
-        agentV1s[index].makeAMove();
+        agentV1s[index].makeAMove(0);
     }
 
     private static void agentV1PlaysRound() {
@@ -397,21 +398,22 @@ public class Game {
         }
 
         boolean atleastOneStillGoing = true;
-        while (atleastOneStillGoing) {
+        for (int i = 1; atleastOneStillGoing; i++) {
             //all agents make a move except they're done
             for (AgentV1 agent : agentV1s) {                        //TODO fix: this is biased for first players
                 if (!agent.isDone()) {
                     int oldHealth = agent.getAgentPlaysAs().getHealth();
-                    agent.makeAMove();
+                    agent.makeAMove(i);
                     //last moves (agent done) are handled after combat to get correct reward
                     if (!agent.isDone()) {
                         //SARS gets completed and stored in ERS
                         agent.setEndStateOfCurSARS(0);
 
-                        int newHealth = agent.getAgentPlaysAs().getHealth();
-                        int reward = (oldHealth - newHealth) * -7;
                         //TODO reactivate
-                        //agent.addToRewardOfCurSARS(reward);
+                        /*int newHealth = agent.getAgentPlaysAs().getHealth();
+                        int reward = (oldHealth - newHealth) * -7;
+                        agent.addToRewardOfCurSARS(reward);*/
+
                         agent.saveCurSARStoERS();
                     }
                 }

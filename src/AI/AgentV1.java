@@ -25,7 +25,7 @@ public class AgentV1 {
     private static final double discountFactor = 0.99;                   //aka gamma; how much the predicted future value gets factored in. 1 = completly, 0 = not at all
 
     //update calcCurState and makeAMove when adjusting the following constants
-    private static final int inputNodes = 7;
+    private static final int inputNodes = 8;
     private static final int[] hiddenLayersNodes = new int[] {8, 9};
     private static final int outputNodes = 9;
 
@@ -173,8 +173,8 @@ public class AgentV1 {
     }
 
 
-    public void makeAMove() {
-        if (curState == null) curState = calcCurState();
+    public void makeAMove(int actionNo) {
+        if (curState == null) curState = calcCurState(actionNo);
 
         double[] outputs = collectiveBrain.calcOutputs(curState);
 
@@ -222,12 +222,14 @@ public class AgentV1 {
         newSARS[inputNodes] = indexOfChosenAction;
 
         //rewards further modified later
-        if (!legal)                     newSARS[inputNodes + 1] = 0;        //try to stop illegal moves
-        if (indexOfChosenAction == 1)  newSARS[inputNodes + 1] = 0;         //try to stop ai from freezing over and over
-        if (indexOfChosenAction != 8)  newSARS[inputNodes + 1] = -1;        //try to stop ai from never ending turn
+        newSARS[inputNodes + 1] = 0;
+        //if (!legal)                    newSARS[inputNodes + 1] += -1;         //try to stop illegal moves
+        //if (indexOfChosenAction == 1)  newSARS[inputNodes + 1] += -1;         //try to stop ai from freezing over and over
+        //if (indexOfChosenAction != 8)  newSARS[inputNodes + 1] += -1;        //try to stop ai from never ending turn
+        if (indexOfChosenAction != 8 && actionNo > 10)  newSARS[inputNodes + 1] += -20;        //try to stop ai from never ending turn
 
         //new state
-        curState = calcCurState();
+        curState = calcCurState(actionNo + 1);
         System.arraycopy(curState, 0, newSARS, inputNodes + 1 + 1, inputNodes);
 
         //end state (?) added later
@@ -248,7 +250,7 @@ public class AgentV1 {
     }
 
 
-    private int[] calcCurState() {
+    private int[] calcCurState(int actionNo) {
         int[] encodedState = new int[inputNodes];
 
         //encode gold
@@ -275,13 +277,16 @@ public class AgentV1 {
             encodedState[i + 5] = board.get(i).getId();
         }
 
+        //encode actionNo
+        encodedState[7] = actionNo;
+
         return encodedState;
     }
 
 
     public void setAgentPlaysAs(Player agentPlaysAs) {
         this.agentPlaysAs = agentPlaysAs;
-        curState = calcCurState();
+        curState = calcCurState(0);
     }
 
     public Player getAgentPlaysAs() {
